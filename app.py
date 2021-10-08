@@ -1,6 +1,5 @@
 from flask import Flask, render_template, jsonify, request
 from bd_personas import admin, students, teachers
-from teachers import get_teachers
 
 app = Flask(__name__)
 
