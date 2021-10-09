@@ -108,6 +108,9 @@ def delete_teacher(id):
     return jsonify({"message": "Teacher with id {} was not found.".format(id)})
 
 
+# Students
+
+
 @app.route('/students')
 def get_students():
     """Function to display the list of students.
@@ -116,6 +119,34 @@ def get_students():
         Json: json list of students.
     """
     return jsonify({"students": students})
+
+
+@app.route('/students/<int:id>')
+def get_student(id):
+    """Function to get a student by id.
+
+    Args:
+        id (int): number of id assigned to each student.
+
+    Returns:
+        json: json response with student data if exists. Otherwise give a string error message.
+    """
+    lst_students = [student for student in students if student["id"] == id]
+    if len(lst_students) > 0:
+        return jsonify({"student": lst_students})
+    return jsonify({"message": "The student with id {} is not available.".format(id)})
+
+
+@app.route('/students', methods=['POST'])
+def add_student():
+    """Fuction to add a student
+
+    Returns:
+        json: returns a json with name of the student that was added and the list of all students
+    """
+    student = request.json
+    students.append(student)
+    return jsonify({"message": "The student {} {} was added successfully".format(student["name"], student["last_name"])}, {"students": students})
 
 
 if __name__ == '__main__':
