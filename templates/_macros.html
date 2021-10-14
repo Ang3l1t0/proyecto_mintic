@@ -1,0 +1,50 @@
+<!-- macro que genera los fields de los forms -->
+{% macro render_field(field) %}
+<div class="form-group row">
+    <label for="{{ field.name }}" class="col-md-4 col-form-label text-md-right">{{ field.label.text }}</label>
+    <div class="col-md-6">
+        {{ field(class_="form-control", **kwargs)|safe}}
+    </div>
+</div>
+{% endmacro %}
+
+
+<!-- macro que genera los modal de las asignaturas siendo k y v valores del diccionario de prueba-->
+{% macro render_modal_asign(k, v, form, field, field2) %}
+<div class="center"><button data-bs-toggle="modal" data-bs-target="#squarespaceModal{{ k }}" class="btn btn-primary center-block">Click Me</button></div>
+
+<div class="modal fade" id="squarespaceModal{{ k }}" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+	<div class="modal-content">
+		<div class="modal-header">
+  			<h3 class="modal-title" id="lineModalLabel">{{ v }}</h3>
+		</div>
+		<div class="modal-body">
+			
+            <!-- contenido -->
+			      <form method="POST" action="" role="form" class="class">
+              {{ form.hidden_tag() if form.hidden_tag }}
+              {% if caller %}
+                  {{ caller() }}
+              {% else %}
+              {{render_field(field)}}
+              {{render_field(field2)}}
+              {{ form.submit(class="btn btn-primary")}}
+              {% endif %}
+		</div>
+		<div class="modal-footer">
+			<div class="btn-group btn-group-justified" role="group" aria-label="group button">
+				<div class="btn-group" role="group">
+					<button type="button" class="btn btn-default" data-dismiss="modal"  role="button">Cerrar</button>
+				</div>
+	
+				<div class="btn-group" role="group">
+					<button type="button" id="saveImage" class="btn btn-default btn-hover-green" data-action="save" role="button">Guardar</button>
+				</div>
+			</div>
+		</div>
+	</div>
+  </div>
+</div>
+{% endmacro %}
+
