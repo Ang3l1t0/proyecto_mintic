@@ -1,8 +1,8 @@
 from flask import Flask, render_template, redirect, url_for, session, flash, request
 from flask_moment import Moment
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField, BooleanField
-from wtforms.validators import DataRequired, Length, Email
+from wtforms import StringField, SubmitField, PasswordField, BooleanField, ValidationError
+from wtforms.validators import DataRequired, Length, Email, Regexp, EqualTo
 import os
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -14,7 +14,7 @@ app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
-app.config['SECRET_KEY'] = 'hard to guess string'
+app.config['SECRET_KEY'] = os.urandom(24)
 app.config['SQLALCHEMY_DATABASE_URI'] =\
 'sqlite:///' + os.path.join(basedir, 'grades.sqlite')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -83,12 +83,26 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Log In')
 
 class RegForm(FlaskForm):
-    nombre = StringField('Nombre', validators=[DataRequired()])
-    apellido = StringField('Apellido', validators=[DataRequired()])
-    id = StringField('Cédula', validators=[DataRequired()])
-    tel = StringField('Teléfono', validators=[DataRequired()])
+    name = StringField('Nombre', validators=[DataRequired()])
+    last_name = StringField('Apellido', validators=[DataRequired()])
+    cc = StringField('Cédula', validators=[DataRequired()])
+    age = StringField('Edad', validators=[DataRequired()])
     email = StringField('Email UniQuindio', validators=[DataRequired()])
-    submit = SubmitField('ENVIAR')
+    username = StringField('Usuario', validators=[
+    DataRequired(), Length(1, 64),
+    Regexp('^[A-Za-z][A-Za-z0-9_.]*$', 0,
+    'Solo usuarios con numeros o letras')])
+    password = PasswordField('Password', validators=[ DataRequired(), EqualTo('password2', message='Passwords deben ser iguales')])
+    password2 = PasswordField('Confirma password', validators=[DataRequired()])
+    submit = SubmitField('Registrar')
+
+    def validate_email(self, field):
+        if User.query.filter_by(email=field.data).first():
+            raise ValidationError('Email ya registrado')
+
+    def validate_username(self, field):
+        if User.query.filter_by(username=field.data).first():
+            raise ValidationError('Usuario ya registrado')
 
 class AsignForm(FlaskForm):
     nombre = StringField('Nombre')
@@ -133,7 +147,18 @@ def cursos():
 def registro():
     form = RegForm()
     if form.validate_on_submit():
-        return render_template('registro_completo.html', nombre=form.nombre.data, apellido=form.apellido.data, id=form.id.data, tel=form.tel.data, email=form.email.data)
+        user = User(name=form.name.data,
+                    last_name=form.last_name.data,
+                    cc=form.cc.data,
+                    age=form.age.data,
+                    email=form.email.data,
+                    username=form.username.data,
+                    password=form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        print('se registro')
+        flash('Puedes hacer Login')
+        return redirect(url_for('login'))
     return render_template('registro.html', form=form)
 
 

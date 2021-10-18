@@ -70,21 +70,14 @@
 
                         <form action="" method="POST">
                             {{ form.hidden_tag() }}
-                            {{ render_field(form.nombre) }}
-                            {{ render_field(form.apellido) }}
-                            {{ render_field(form.id) }}
-                            {{ render_field(form.tel) }}
+                            {{ render_field(form.name) }}
+                            {{ render_field(form.last_name) }}
+                            {{ render_field(form.cc) }}
+                            {{ render_field(form.age) }}
                             {{ render_field(form.email) }}
-                            <div class="form-group row">
-                                <div class="col-md-6 offset-md-4">
-                                    <div class="checkbox">
-                                        <label>
-                                            <input type="checkbox" name="remember"> Recordarme
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-
+                            {{ render_field(form.username) }}
+                            {{ render_field(form.password) }}
+                            {{ render_field(form.password2) }}
                             <div class="col-md-6 offset-md-4">
                                 <!-- llamando boton submit del form  -->
 

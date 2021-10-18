@@ -67,17 +67,9 @@
                     <div class="card-body">
                         <form action="" method="POST">
                             {{ form.hidden_tag() }}
-                            <!-- no se usa el macro para dejar el ejemplo sin macro -->
-
-                            <div class="form-group row">
-                                <label for="{{ form.email.name }}" class="col-md-4 col-form-label text-md-right">{{ form.email.label }}</label>
-                                <div class="col-md-6">
-                                    {{ form.email(class="form-control")}}
-                                </div>
-                            </div>
                             <!-- llama al macro para generar los fields del form login  -->
 
-
+                            {{ render_field(form.email) }}
                             {{ render_field(form.password) }}
 
                             <div class="form-group row">
@@ -94,6 +86,9 @@
                                 {{ form.submit(class="btn btn-primary")}}
                                 <a href="#" class="btn btn-link">
                                     ¿Olvidó su contraseña?
+                                </a>
+                                <a href="{{ url_for('registro') }}" class="btn btn-link">
+                                    Click aca para registrarse
                                 </a>
                             </div>
                     </div>
