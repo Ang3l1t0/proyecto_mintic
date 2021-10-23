@@ -40,8 +40,17 @@ class Role(db.Model):
     def __repr__(self):
         return '<Role %r>' % self.name
 
+enrollment = db.Table(
+    "enrollment",
+    db.Column("student_id",db.Integer,db.ForeignKey('students.id')),
+    db.Column("course_id",db.Integer,db.ForeignKey('courses.id')),
+
+    db.Column("score",db.DECIMAL(5,2))
+)
+
+    
 class User(UserMixin, db.Model):
-    __tablename__ = 'users'
+    __tablename__ = 'students'
     id = db.Column(db.Integer, primary_key = True)
     email = db.Column(db.String(64), unique=True, index=True)
     username = db.Column(db.String(64), unique=True, index=True)
@@ -66,6 +75,47 @@ class User(UserMixin, db.Model):
 
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+
+class Teacher(UserMixin, db.Model):
+    __tablename__ = 'teachers'
+    id = db.Column(db.Integer, primary_key = True)
+    email = db.Column(db.String(64), unique=True, index=True)
+    username = db.Column(db.String(64), unique=True, index=True)
+    name = db.Column(db.String(64))
+    last_name = db.Column(db.String(64))
+    cc = db.Column(db.Integer, unique=True, index=True)
+    age = db.Column(db.Integer)
+    genre = db.Column(db.CHAR)
+    password_hash = db.Column(db.String(128))
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
+    course_list = db.relationship("Course",uselist=True, backref="teacher",lazy="subquery")
+
+    def __repr__(self):
+        return '<Teacher %r>' % self.username
+    
+    @property
+    def password(self):
+        raise AttributeError('password no es un atributo legible')    
+
+    @password.setter
+    def password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def verify_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+class Course(db.Model):
+    __tablename__ = 'courses'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), unique=True, index=True)
+    code = db.Column(db.String(64), unique=True, index=True)
+    about = db.Column(db.String(128))
+    teacher_id = db.Column(db.Integer,db.ForeignKey(Teacher.id))
+    student_list = db.relationship('User', secondary=enrollment, backref='course_list',lazy='dynamic')
+
+    def __repr__(self):
+        return '<Course %r>' % self.name
 
 @app.shell_context_processor
 def make_shell_context():
