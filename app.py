@@ -7,7 +7,7 @@ import os
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_mail import Mail
-from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user
+from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
@@ -119,7 +119,7 @@ class Course(db.Model):
 
 @app.shell_context_processor
 def make_shell_context():
-    return dict(db=db, User=User, Role=Role)
+    return dict(db=db, User=User, Role=Role, Teacher=Teacher, Course=Course)
 
 #trae un usuario con el query de la db dado su id (usuario loggeado)
 @login_manager.user_loader
@@ -154,10 +154,13 @@ class RegForm(FlaskForm):
         if User.query.filter_by(username=field.data).first():
             raise ValidationError('Usuario ya registrado')
 
-class AsignForm(FlaskForm):
-    nombre = StringField('Nombre')
-    codigo = StringField('Código')
-    submit = SubmitField('Cambiar')
+class EditProfileForm(FlaskForm):
+    name = StringField('Nombre', validators=[Length(0, 64)])
+    last_name = StringField('Apellido', validators=[Length(0, 64)])
+    cc = StringField('Cédula', validators=[Length(0, 64)])
+    age = StringField('Edad', validators=[Length(0, 64)])
+    email = StringField('Email UniQuindio', validators=[Length(0, 64)])
+    submit = SubmitField('Editar')
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -169,28 +172,48 @@ def internal_server_error(e):
     return render_template('500.html'), 500
 
 
-@app.route('/perfil')
+
+@app.route('/user/<username>')
+def user(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    return render_template('user.html', user=user)
+
+@app.route('/edit-profile', methods=['GET', 'POST'])
 @login_required
-def perfil():
-     return render_template('perfil.html')
-
-
-@app.route('/registro_completo')
-def registro_completo():
-     return render_template('registro_completo.html')
-
-
-@app.route('/cursos', methods=['GET', 'POST'])
-@login_required
-def cursos():
-    form = AsignForm()    
-    cursos = {"9287222":"Programación y Desarrollo Web", "1277362":"Python Avanzado", "234322":"Machine Learning y AI"}
+def edit_profile():
+    form = EditProfileForm()
     if form.validate_on_submit():
-        codigo = str(form.codigo.data)
-        nombre = str(form.nombre.data)
-        cursos[codigo] =  nombre
-        return render_template('cursos.html', cursos=cursos)
-    return render_template('cursos.html', cursos=cursos, form=form)
+        current_user.name = form.name.data
+        current_user.last_name = form.last_name.data
+        current_user.cc = form.cc.data
+        current_user.age = form.age.data
+        current_user.email = form.email.data
+        db.session.add(current_user._get_current_object())
+        db.session.commit()
+        flash('Perfil actualizado.')
+        return redirect(url_for('user', username=current_user.username))
+    form.name.data = current_user.name  
+    form.last_name.data = current_user.last_name
+    form.cc.data = current_user.cc
+    form.age.data = current_user.age
+    form.email.data = current_user.email
+    return render_template('edit_profile.html', form=form)
+
+
+@app.route('/courses/<username>')
+@login_required
+def courses(username):
+    user = User.query.filter(User.username==username).first()
+    user_course = user.course_list
+    nombre = []
+    for i in user.course_list:
+        teacher = Teacher.query.filter(Teacher.id== i.teacher_id). first()
+        nombre.append(teacher.name)
+    print(nombre)
+    return render_template('courses.html', packed=zip(user_course, nombre))
+
+
+
 
 
 @app.route('/registro', methods=['GET', 'POST'])
@@ -250,8 +273,8 @@ def home():
     return render_template('home.html', name=session.get('name'))
     
 
-@app.route('/actividades')
+@app.route('/activities/')
 @login_required
-def actividades():
+def activities():
     return render_template('actividades.html')
 

@@ -5,34 +5,54 @@
 <div class="page-header">
     <h1>Editar Perfil</h1>
 </div>
-
+<br/>
 <main class="login-form">
     <div class="cotainer">
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <div class="card">
-                    <div class="card-header">Registro</div>
+                    <div class="card-header">Edición</div>
                     <div class="card-body">
                         <!-- llama al macro para generar los fields del form registro -->
 
                         <form action="" method="POST">
                             {{ form.hidden_tag() }}
-                            {{ render_field(form.name) }}
-                            {{ render_field(form.last_name) }}
-                            {{ render_field(form.cc) }}
-                            {{ render_field(form.age) }}
-                            {{ render_field(form.email) }}
-                            {{ render_field(form.username) }}
-                            {{ render_field(form.password) }}
-                            {{ render_field(form.password_new) }}
-                            {{ render_field(form.password2_new) }}
+                            <div class="form-group row">
+                                <label for="{{ form.name.name }}" class="col-md-4 col-form-label text-md-right">{{ form.name.label }}</label>
+                                <div class="col-md-6">
+                                    {{ form.name(class="form-control")}}
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="{{ form.last_name.name }}" class="col-md-4 col-form-label text-md-right">{{ form.last_name.label }}</label>
+                                <div class="col-md-6">
+                                    {{ form.last_name(class="form-control")}}
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="{{ form.cc.name }}" class="col-md-4 col-form-label text-md-right">{{ form.cc.label }}</label>
+                                <div class="col-md-6">
+                                    {{ form.cc(class="form-control")}}
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="{{ form.age.name }}" class="col-md-4 col-form-label text-md-right">{{ form.age.label }}</label>
+                                <div class="col-md-6">
+                                    {{ form.age(class="form-control")}}
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="{{ form.email.name }}" class="col-md-4 col-form-label text-md-right">{{ form.email.label }}</label>
+                                <div class="col-md-6">
+                                    {{ form.email(class="form-control")}}
+                                </div>
+                            </div>
+                             <br/>
                             <div class="col-md-6 offset-md-4">
                                 <!-- llamando boton submit del form  -->
 
                                 {{ form.submit(class="btn btn-primary")}}
-                                <a href="#" class="btn btn-link">
-                                    ¿Olvidó su contraseña?
-                                </a>
+
                             </div>
                     </div>
                     </form>

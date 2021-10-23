@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+
+{% block page_content %}
+<div class="page-header">
+    <h1>Perfil de {{ user.name }} {{ user.last_name }}
+</div>
+<br/>
+<h3>{{ user.username }}</h3>
+<h3>{{ user.email }}</h3>
+<h3>Cédula: {{ user.cc }}</h3>
+<h3>Edad: {{ user.age }}</h3>
+
+{% if user == current_user %}
+<a class="btn btn-primary" href="{{ url_for('edit_profile') }}">
+ Editar Perfil
+</a>
+{% endif %}
+
+{% endblock %}

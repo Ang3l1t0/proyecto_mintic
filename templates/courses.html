@@ -18,18 +18,25 @@
     <br/>
     <!-- genera un container por aca item en el diccionario -->
 
-    {% for k,v in cursos.items() %}
+    {% for i, o  in packed: %}
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-12">
                 <div class="jumbotron">
                     <h2>
-                        {{ v }}
-                    </h2>
+                        {{ i.name }}
+                    </h2> 
                     <p>
-                        {{ k }}
-                    </p>
-                   
+                        Código:{{ i.code }}
+                    </p>      
+                    <p>
+                        Profesor: {{ o }}
+                    </p>   
+                    <!--<a href="{{ url_for('activities', id=i.code) }}">
+                        <span class="label label-default">Activities</span>
+                    </a>
+                    -->
+                              
                 </div>
             </div>
         </div>
