@@ -40,15 +40,26 @@ class Role(db.Model):
     def __repr__(self):
         return '<Role %r>' % self.name
 
-enrollment = db.Table(
-    "enrollment",
-    db.Column("student_id",db.Integer,db.ForeignKey('students.id')),
-    db.Column("course_id",db.Integer,db.ForeignKey('courses.id')),
+class Enrollment (db.Model):
+    __tablename__ = "enrollment"
+    id = db.Column(db.Integer, primary_key = True)
+    student_id = db.Column(db.Integer,db.ForeignKey('students.id'))
+    course_id = db.Column(db.Integer,db.ForeignKey('courses.id'))
 
-    db.Column("score",db.DECIMAL(5,2))
-)
+    score = db.Column(db.DECIMAL(5,2))
 
-    
+    homework = db.relationship('Homework', backref='homework', lazy='subquery')
+
+class Homework(db.Model):
+    __tablename__ = 'homework'
+    id = db.Column(db.Integer, primary_key = True)
+    email = db.Column(db.String(64), unique=True, index=True)
+    username = db.Column(db.String(64), unique=True, index=True)
+    name = db.Column(db.String(64))
+    last_name = db.Column(db.String(64))
+    enrollment_id = db.Column(db.Integer, db.ForeignKey('enrollment.id'))
+
+
 class User(UserMixin, db.Model):
     __tablename__ = 'students'
     id = db.Column(db.Integer, primary_key = True)
@@ -112,10 +123,11 @@ class Course(db.Model):
     code = db.Column(db.String(64), unique=True, index=True)
     about = db.Column(db.String(128))
     teacher_id = db.Column(db.Integer,db.ForeignKey(Teacher.id))
-    student_list = db.relationship('User', secondary=enrollment, backref='course_list',lazy='dynamic')
+    student_list = db.relationship('User', backref='course_list',lazy='dynamic')
 
     def __repr__(self):
         return '<Course %r>' % self.name
+
 
 @app.shell_context_processor
 def make_shell_context():
