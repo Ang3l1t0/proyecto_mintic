@@ -1,0 +1,44 @@
+CREATE TABLE IF NOT EXISTS roles (
+    role_id INT PRIMARY KEY NOT NULL,
+    role_name VARCHAR(10) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS admins (
+    admin_id INT PRIMARY KEY NOT NULL,
+    admin_name VARCHAR(25) NOT NULL,
+    admin_last_name VARCHAR(25) NOT NULL,
+    admin_email VARCHAR(25) NOT NULL,
+    admin_user VARCHAR(25) NOT NULL,
+    role_id INT REFERENCES roles(role_id)
+);
+
+CREATE TABLE IF NOT EXISTS teachers (
+    teacher_id INT PRIMARY KEY NOT NULL,
+    teacher_name VARCHAR(25) NOT NULL,
+    teacher_last_name VARCHAR(25) NOT NULL,
+    teacher_cc INT NOT NULL,
+    teacher_age INT NOT NULL,
+    teacher_genre VARCHAR(5),
+    teacher_email VARCHAR(30) NOT NULL,
+    teacher_username VARCHAR(15) NOT NULL,
+    role_id INT REFERENCES roles(role_id),
+    teacher_password VARCHAR NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS students (
+    student_id INT PRIMARY KEY NOT NULL,
+    student_name VARCHAR(25) NOT NULL,
+    student_last_name VARCHAR(25) NOT NULL,
+    student_cc INT NOT NULL,
+    student_age INT NOT NULL,
+    student_genre VARCHAR(5),
+    student_email VARCHAR(30) NOT NULL,
+    student_username VARCHAR(15) NOT NULL,
+    role_id INT REFERENCES roles(role_id),
+    teacher_password VARCHAR NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS courses (
+    course_id INT PRIMARY KEY NOT NULL,
+    
+)
