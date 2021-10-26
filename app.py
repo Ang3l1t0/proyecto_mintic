@@ -49,14 +49,20 @@ class Enrollment (db.Model):
     score = db.Column(db.DECIMAL(5,2))
 
     homework = db.relationship('Homework', backref='homework', lazy='subquery')
+    student_list = db.relationship('User', backref='course_list',lazy='subquery')
+
 
 class Homework(db.Model):
     __tablename__ = 'homework'
     id = db.Column(db.Integer, primary_key = True)
-    email = db.Column(db.String(64), unique=True, index=True)
-    username = db.Column(db.String(64), unique=True, index=True)
-    name = db.Column(db.String(64))
-    last_name = db.Column(db.String(64))
+    title = db.Column(db.String(128))
+    description = db.Column(db.String)
+    limit_date = db.Column(db.DateTime)
+    status = db.Column(db.String)
+    student_comment = db.Column(db.String)
+    grade = db.Column(db.DECIMAL(5,2))
+    date_sent = db.Column(db.DateTime)
+    file_url = db.Column(db.String)
     enrollment_id = db.Column(db.Integer, db.ForeignKey('enrollment.id'))
 
 
@@ -123,7 +129,6 @@ class Course(db.Model):
     code = db.Column(db.String(64), unique=True, index=True)
     about = db.Column(db.String(128))
     teacher_id = db.Column(db.Integer,db.ForeignKey(Teacher.id))
-    student_list = db.relationship('User', backref='course_list',lazy='dynamic')
 
     def __repr__(self):
         return '<Course %r>' % self.name
@@ -131,7 +136,7 @@ class Course(db.Model):
 
 @app.shell_context_processor
 def make_shell_context():
-    return dict(db=db, User=User, Role=Role, Teacher=Teacher, Course=Course)
+    return dict(db=db, User=User, Role=Role, Teacher=Teacher, Course=Course, Homework=Homework, Enrollment=Enrollment)
 
 #trae un usuario con el query de la db dado su id (usuario loggeado)
 @login_manager.user_loader
@@ -218,15 +223,16 @@ def edit_profile():
 @login_required
 def courses(username):
     user = User.query.filter(User.username==username).first()
-    user_course = user.course_list
-    nombre = []
-    for i in user.course_list:
-        teacher = Teacher.query.filter(Teacher.id== i.teacher_id). first()
-        nombre.append(teacher.name)
-    print(nombre)
-    return render_template('courses.html', packed=zip(user_course, nombre))
+    result = db.session.execute('Select students.name, courses.name As course, teachers.name As teacher, homework.title As homework, enrollment.id As enrollment From courses Inner Join enrollment On courses.id = enrollment.course_id Inner Join students On students.id = enrollment.student_id Inner Join teachers On teachers.id = courses.teacher_id Inner Join homework On enrollment.id = homework.enrollment_id Where students.username = :val', {'val': current_user.username})
+    #print([row[0] for row in result])
 
+    return render_template('courses.html', result=result)
 
+@app.route('/activities/<enrollment_id>')
+@login_required
+def activities(enrollment_id):
+    result = db.session.execute('Select courses.name As course, teachers.name As teacher, homework.title As homework, enrollment.id As enrollment, homework.description, homework.status, homework.limit_date, homework.student_comment, homework.grade, homework.date_sent From courses Inner Join enrollment On courses.id = enrollment.course_id Inner Join students On students.id = enrollment.student_id Inner Join teachers On teachers.id = courses.teacher_id Inner Join homework On enrollment.id = homework.enrollment_id Where enrollment.id = :val', {'val': enrollment_id})
+    return render_template('activities.html', result=result)
 
 
 
@@ -287,8 +293,5 @@ def home():
     return render_template('home.html', name=session.get('name'))
     
 
-@app.route('/activities/')
-@login_required
-def activities():
-    return render_template('actividades.html')
+
 

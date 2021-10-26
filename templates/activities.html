@@ -17,22 +17,32 @@
 
 {% block page_content %}
 <div class="page-header">
-    <h1>Actividades</h1>
+    <h1>Actividades de {{ course }}</h1>
 </div>
-<div class="container">
-    <div class="row">
-        <div class="col-md-4">titulo</div>
-        <div class="col-md-2">fecha entrega</div>
-        <div class="col-md-5"><button type="submit" class="btn btn-primary">
-            Register
-        </button></div>
-        <div class="col-md-6 .descripcion">
-            descripcion
+{% for homework in result %}
+  {% if homework.status == 'No entregado' %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="jumbotron">
+                    <h2>
+                        {{ homework.homework }}
+                    </h2> 
+                    <p>
+                    {{ homework.description }}
+                    </p>
+                  <p>
+                    Profesor:{{ homework.teacher }}
+                  </p>
+                  <p>
+                    Status:{{ homework.status }}
+                  </p>
+                  
+                </div>
+            </div>
+        </div>
     </div>
-        <div class="col-md-3">enviada</div>
-        <div class="col-md-2">calificacion</div>
-    </div>
-    <div class="row"></div>
-</div>
-
+    <br/>
+    {% endif %}
+    {% endfor %}
 {% endblock %}
