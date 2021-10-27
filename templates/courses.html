@@ -19,26 +19,17 @@
     <!-- genera un container por aca item en el diccionario -->
 
     {% for student in result %}
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-12">
-                <div class="jumbotron">
-                    <h2>
-                        {{ student.course }}
-                    </h2> 
-                    <p>
-                        Profesor:{{ student.teacher }}
-                    </p>      
-                  
-                    <a href="{{ url_for('activities', enrollment_id=student.enrollment) }}">
-                        <span class="label label-default">Activities</span>
-                    </a>
-                   
-                              
-                </div>
+    <div class="card">
+        <h5 class="card-header">{{ student.course }}</h5>
+            <div class="card-body">
+                <h6 class="card-title">Profesor: {{ student.teacher }} </h6>
+                <a href="{{ url_for('activities', enrollment_id=student.enrollment) }}">
+                    <span class="btn btn-primary">Activities</span>
+                </a>
             </div>
-        </div>
+        
     </div>
     <br/>
+
     {% endfor %}
 {% endblock %}

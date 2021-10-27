@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_modal_asign with context %}
+{% from "_macros.html" import render_field with context %}
+{% block head %}
+  {{ super() }}
+  <style type="text/css">
+  .col-md-12{
+    background-color: rgb(136, 245, 136);
+  }
+    
+  </style>
+{% endblock %}
+
+
+{% block page_content %}
+<div class="page-header">
+    <h1>Enviar Actividad</h1>
+    <br/>
+    <!-- genera un container por aca item en el diccionario -->
+
+    <form method="POST" enctype="multipart/form-data">
+      {{ form.hidden_tag() }}
+      {{ form.homework }}
+      <button type="submit" name="homework_sent" value="{{ homework.id }}">Enviar</button>
+      </form>
+
+    
+{% endblock %}

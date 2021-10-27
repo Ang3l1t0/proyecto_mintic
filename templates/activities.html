@@ -17,30 +17,45 @@
 
 {% block page_content %}
 <div class="page-header">
-    <h1>Actividades de {{ course }}</h1>
+    <h1>Actividades de {{ course }} </h1>
 </div>
 {% for homework in result %}
   {% if homework.status == 'No entregado' %}
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-12">
-                <div class="jumbotron">
-                    <h2>
-                        {{ homework.homework }}
-                    </h2> 
-                    <p>
+    <div class="card">
+        <h5 class="card-header">{{ homework.homework }} </h5>
+            <div class="card-body">
+                <h6 class="card-title">Status: {{ homework.status }} </h6>
+
+                    <p class= "card-text">
                     {{ homework.description }}
                     </p>
-                  <p>
-                    Profesor:{{ homework.teacher }}
+                  <p class= "card-text">
+                    Profesor: {{ homework.teacher }}
                   </p>
-                  <p>
-                    Status:{{ homework.status }}
-                  </p>
-                  
-                </div>
+
+                  <a href="{{ url_for('upload', homework_id=homework.id, enrollment_id=enrollment_id) }}">
+                    <span class="btn btn-primary">Subir</span>
+                  </a>
+  {% else %}
+
+
+  <div class="card">
+    <h5 class="card-header">{{ homework.homework }} </h5>
+        <div class="card-body">
+            <h6 class="card-title">Status: {{ homework.status }} </h6>
+
+                <p class= "card-text">
+                {{ homework.description }}
+                </p>
+              <p class= "card-text">
+                Profesor: {{ homework.teacher }}
+              </p>
+              <a href="{{ homework.file_url }}">
+                <span class="btn btn-primary">Archivo Subido</span>
+              </a>
+
             </div>
-        </div>
+        
     </div>
     <br/>
     {% endif %}
