@@ -21,8 +21,9 @@
     <form method="POST" enctype="multipart/form-data">
       {{ form.hidden_tag() }}
       {{ form.homework }}
-      <button type="submit" name="homework_sent" value="{{ homework.id }}">Enviar</button>
-      </form>
+      {{ form.comment }}
+      {{ form.submit(class="btn btn-primary")}}
+    </form>
 
     
 {% endblock %}

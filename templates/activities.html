@@ -24,7 +24,7 @@
     <div class="card">
         <h5 class="card-header">{{ homework.homework }} </h5>
             <div class="card-body">
-                <h6 class="card-title">Status: {{ homework.status }} </h6>
+                <h6 class="card-title">Status: {{ homework.status }}   Fecha Limite: {{ homework.limit_date }}</h6>
 
                     <p class= "card-text">
                     {{ homework.description }}
@@ -34,7 +34,7 @@
                   </p>
 
                   <a href="{{ url_for('upload', homework_id=homework.id, enrollment_id=enrollment_id) }}">
-                    <span class="btn btn-primary">Subir</span>
+                    <span class="btn btn-primary">Enviar Actividad</span>
                   </a>
   {% else %}
 
@@ -42,13 +42,16 @@
   <div class="card">
     <h5 class="card-header">{{ homework.homework }} </h5>
         <div class="card-body">
-            <h6 class="card-title">Status: {{ homework.status }} </h6>
+            <h6 class="card-title">Status: {{ homework.status }} Fecha Envio: {{ homework.date_sent }}</h6>
 
                 <p class= "card-text">
                 {{ homework.description }}
                 </p>
               <p class= "card-text">
                 Profesor: {{ homework.teacher }}
+              </p>
+              <p class= "card-text">
+                Comentarios Estudiante: {{ homework.student_comment }}
               </p>
               <a href="{{ url_for('download_file', homework_id=homework.id)}}">
                 <span class="btn btn-primary">Archivo Subido</span>

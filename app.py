@@ -1,7 +1,7 @@
 from flask import Flask, render_template, redirect, url_for, session, flash, request, send_file
 from flask_moment import Moment
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField, BooleanField, ValidationError, FileField
+from wtforms import StringField, SubmitField, PasswordField, BooleanField, ValidationError, FileField, TextAreaField
 from wtforms.validators import DataRequired, Length, Email, Regexp, EqualTo
 import os
 from flask_sqlalchemy import SQLAlchemy
@@ -10,6 +10,8 @@ from flask_mail import Mail
 from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_uploads import configure_uploads, UploadSet, DOCUMENTS
+from datetime import datetime
+
 
 app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -61,12 +63,12 @@ class Homework(db.Model):
     __tablename__ = 'homework'
     id = db.Column(db.Integer, primary_key = True)
     title = db.Column(db.String(128))
-    description = db.Column(db.String)
-    limit_date = db.Column(db.Date)
+    description = db.Column(db.Text)
+    limit_date = db.Column(db.DateTime, default=datetime.utcnow)
     status = db.Column(db.String)
-    student_comment = db.Column(db.String)
+    student_comment = db.Column(db.Text)
     grade = db.Column(db.DECIMAL(5,2))
-    date_sent = db.Column(db.Date)
+    date_sent = db.Column(db.DateTime)
     file_url = db.Column(db.String)
     enrollment_id = db.Column(db.Integer, db.ForeignKey('enrollment.id'))
 
@@ -144,10 +146,17 @@ class Course(db.Model):
 def make_shell_context():
     return dict(db=db, User=User, Role=Role, Teacher=Teacher, Course=Course, Homework=Homework, Enrollment=Enrollment)
 
+
 #trae un usuario con el query de la db dado su id (usuario loggeado)
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    if session['account_type'] == 'Student':
+        return User.query.get(int(user_id))
+    elif session['account_type'] == 'Teacher':
+        return Teacher.query.get(int(user_id))
+    else:
+      return None
+
 
 class LoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Length(1, 64), Email()])
@@ -188,6 +197,8 @@ class EditProfileForm(FlaskForm):
 
 class SubmitHomework(FlaskForm):
     homework = FileField('Documento')
+    comment = TextAreaField('Comentarios')
+    submit = SubmitField('Enviar')
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -203,6 +214,7 @@ def internal_server_error(e):
 @app.route('/user/<username>')
 @login_required
 def user(username):
+    
     user = User.query.filter_by(username=username).first_or_404()
     return render_template('user.html', user=user)
 
@@ -253,6 +265,8 @@ def upload(homework_id, enrollment_id):
     if request.method == 'POST':
         homework.file_url = documents.save(form.homework.data)
         homework.status = "Entregado"
+        homework.student_comment = form.comment.data
+        homework.date_sent = datetime.utcnow()
         db.session.add(homework)
         db.session.commit()
         flash('Actividad correctamente enviada')
@@ -262,6 +276,7 @@ def upload(homework_id, enrollment_id):
     return render_template('upload.html', form=form, homework=homework)
 
 @app.route('/download/<int:homework_id>')
+@login_required
 def download_file(homework_id):
     homework = Homework.query.filter(Homework.id==homework_id).first()
     return send_file(basedir+"\\uploads\\documents\\"+ homework.file_url, as_attachment=True)
@@ -291,6 +306,23 @@ def login():
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
         if user is not None and user.verify_password(form.password.data):
+            session['account_type'] = 'Student'
+            login_user(user, remember=True)
+            next = request.args.get('next')
+            if next is None or not next.startswith('/'):
+                next = url_for('home')
+            return redirect(next)
+        flash('Usuario o clave inválida')
+    return render_template('login.html', form=form)
+
+
+@app.route('/teacher/login', methods=['GET', 'POST'])
+def login_teacher():
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = Teacher.query.filter_by(email=form.email.data).first()
+        if user is not None and user.verify_password(form.password.data):
+            session['account_type'] = 'Teacher'
             login_user(user, remember=True)
             next = request.args.get('next')
             if next is None or not next.startswith('/'):
