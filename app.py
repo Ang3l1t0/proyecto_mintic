@@ -11,6 +11,8 @@ from flask_login import LoginManager, UserMixin, login_required, login_user, log
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_uploads import configure_uploads, UploadSet, DOCUMENTS
 from datetime import datetime
+from functools import wraps
+
 
 
 app = Flask(__name__)
@@ -146,6 +148,17 @@ class Course(db.Model):
 def make_shell_context():
     return dict(db=db, User=User, Role=Role, Teacher=Teacher, Course=Course, Homework=Homework, Enrollment=Enrollment)
 
+def require_role(role):
+    """make sure user has this role"""
+    def decorator(func):
+        @wraps(func)
+        def wrapped_function(*args, **kwargs):
+            if not session['account_type'] == role:
+                return redirect("/")
+            else:
+                return func(*args, **kwargs)
+        return wrapped_function
+    return decorator
 
 #trae un usuario con el query de la db dado su id (usuario loggeado)
 @login_manager.user_loader
@@ -243,6 +256,7 @@ def edit_profile():
 
 @app.route('/courses/<username>')
 @login_required
+@require_role(role="Student")
 def courses(username):
     user = User.query.filter(User.username==username).first()
     result = db.session.execute('Select students.name, courses.name As course, teachers.name As teacher, homework.title As homework, enrollment.id As enrollment From courses Inner Join enrollment On courses.id = enrollment.course_id Inner Join students On students.id = enrollment.student_id Inner Join teachers On teachers.id = courses.teacher_id Inner Join homework On enrollment.id = homework.enrollment_id Where students.username = :val', {'val': current_user.username})
@@ -252,6 +266,7 @@ def courses(username):
 
 @app.route('/activities/<int:enrollment_id>', methods=['GET', 'POST'])
 @login_required
+@require_role(role="Student")
 def activities(enrollment_id):
     result = db.session.execute('Select courses.name As course, teachers.name As teacher, homework.title As homework, enrollment.id As enrollment, homework.description, homework.status, homework.limit_date, homework.student_comment, homework.grade, homework.date_sent, homework.file_url, homework.id From courses Inner Join enrollment On courses.id = enrollment.course_id Inner Join students On students.id = enrollment.student_id Inner Join teachers On teachers.id = courses.teacher_id Inner Join homework On enrollment.id = homework.enrollment_id Where enrollment.id = :val', {'val': enrollment_id})
     
@@ -259,9 +274,11 @@ def activities(enrollment_id):
 
 @app.route('/upload/<int:enrollment_id>/<int:homework_id>', methods=['GET', 'POST'])
 @login_required
+@require_role(role="Student")
 def upload(homework_id, enrollment_id):
     form = SubmitHomework()
     homework = Homework.query.filter(Homework.id==homework_id).first()
+    homework_name = homework.title
     if request.method == 'POST':
         homework.file_url = documents.save(form.homework.data)
         homework.status = "Entregado"
@@ -273,7 +290,7 @@ def upload(homework_id, enrollment_id):
         return redirect(url_for('activities', enrollment_id=enrollment_id))
        # db.session.commit()
         #db.session.execute('UPDATE homework Set file_url = :val, status = "Entregado" Where id = :val', {'val': filename, 'val': id})
-    return render_template('upload.html', form=form, homework=homework)
+    return render_template('upload.html', form=form, homework=homework, homework_name=homework_name)
 
 @app.route('/download/<int:homework_id>')
 @login_required

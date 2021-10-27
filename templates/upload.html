@@ -14,16 +14,50 @@
 
 {% block page_content %}
 <div class="page-header">
-    <h1>Enviar Actividad</h1>
+    <h2>{{ homework_name }}</h2>
     <br/>
-    <!-- genera un container por aca item en el diccionario -->
+    <main class="login-form">
+      <div class="cotainer">
+          <div class="row justify-content-center">
+              <div class="col-md-8">
+                  <div class="card">
+                      <div class="card-header">Subir Archivo</div>
+                      <div class="card-body">
+                          <!-- llama al macro para generar los fields del form registro -->
+  
+                          <form action="" method="POST" enctype = "multipart/form-data">
+                              {{ form.hidden_tag() }}
+                              <div class="form-group row">
+                                  <label for="{{ form.homework.name }}" class="col-md-4 col-form-label text-md-right">{{ form.homework.label }}</label>
+                                  <div class="col-md-6">
+                                      {{ form.homework(class="form-control")}}
+                                  </div>
+                              </div>
+                              <br/>
+                              <div class="form-group row">
+                                  <label for="{{ form.comment.name }}" class="col-md-4 col-form-label text-md-right">{{ form.comment.label }}</label>
+                                  <div class="col-md-6">
+                                      {{ form.comment(class="form-control")}}
+                                  </div>
+                              </div>
+                        
+                               <br/>
+                              <div class="col-md-6 offset-md-4">
+                                  <!-- llamando boton submit del form  -->
+  
+                                  {{ form.submit(class="btn btn-primary")}}
+  
+                              </div>
+                      </div>
+                      </form>
+                  </div>
+              </div>
+          </div>
+      </div>
+      </div>
+  
+  </main>
 
-    <form method="POST" enctype="multipart/form-data">
-      {{ form.hidden_tag() }}
-      {{ form.homework }}
-      {{ form.comment }}
-      {{ form.submit(class="btn btn-primary")}}
-    </form>
 
     
 {% endblock %}
