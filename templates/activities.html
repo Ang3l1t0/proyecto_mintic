@@ -50,7 +50,7 @@
               <p class= "card-text">
                 Profesor: {{ homework.teacher }}
               </p>
-              <a href="{{ homework.file_url }}">
+              <a href="{{ url_for('download_file', homework_id=homework.id)}}">
                 <span class="btn btn-primary">Archivo Subido</span>
               </a>
 

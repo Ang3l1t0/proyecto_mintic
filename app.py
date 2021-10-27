@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, session, flash, request
+from flask import Flask, render_template, redirect, url_for, session, flash, request, send_file
 from flask_moment import Moment
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField, BooleanField, ValidationError, FileField
@@ -6,7 +6,6 @@ from wtforms.validators import DataRequired, Length, Email, Regexp, EqualTo
 import os
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from sqlalchemy.orm.attributes import InstrumentedAttribute
 from flask_mail import Mail
 from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -252,7 +251,7 @@ def upload(homework_id, enrollment_id):
     form = SubmitHomework()
     homework = Homework.query.filter(Homework.id==homework_id).first()
     if request.method == 'POST':
-        homework.file_url = 'http://127.0.0.1:5000/uploads/documents'+ documents.save(form.homework.data)
+        homework.file_url = documents.save(form.homework.data)
         homework.status = "Entregado"
         db.session.add(homework)
         db.session.commit()
@@ -261,6 +260,11 @@ def upload(homework_id, enrollment_id):
        # db.session.commit()
         #db.session.execute('UPDATE homework Set file_url = :val, status = "Entregado" Where id = :val', {'val': filename, 'val': id})
     return render_template('upload.html', form=form, homework=homework)
+
+@app.route('/download/<int:homework_id>')
+def download_file(homework_id):
+    homework = Homework.query.filter(Homework.id==homework_id).first()
+    return send_file(basedir+"\\uploads\\documents\\"+ homework.file_url, as_attachment=True)
 
 @app.route('/registro', methods=['GET', 'POST'])
 def registro():
