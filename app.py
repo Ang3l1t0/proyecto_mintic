@@ -214,7 +214,7 @@ def internal_server_error(e):
 @app.route('/user/<username>')
 @login_required
 def user(username):
-    
+
     user = User.query.filter_by(username=username).first_or_404()
     return render_template('user.html', user=user)
 
@@ -303,6 +303,7 @@ def registro():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
+    name = 'Estudiante'
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
         if user is not None and user.verify_password(form.password.data):
@@ -313,12 +314,13 @@ def login():
                 next = url_for('home')
             return redirect(next)
         flash('Usuario o clave inválida')
-    return render_template('login.html', form=form)
+    return render_template('login.html', form=form, name=name)
 
 
 @app.route('/teacher/login', methods=['GET', 'POST'])
 def login_teacher():
     form = LoginForm()
+    name = 'Profesor'
     if form.validate_on_submit():
         user = Teacher.query.filter_by(email=form.email.data).first()
         if user is not None and user.verify_password(form.password.data):
@@ -329,7 +331,7 @@ def login_teacher():
                 next = url_for('home')
             return redirect(next)
         flash('Usuario o clave inválida')
-    return render_template('login.html', form=form)
+    return render_template('login.html', form=form, name=name)
 
 @app.route('/logout')
 @login_required
