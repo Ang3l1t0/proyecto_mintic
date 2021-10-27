@@ -1,14 +1,16 @@
 from flask import Flask, render_template, redirect, url_for, session, flash, request
 from flask_moment import Moment
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField, BooleanField, ValidationError
+from wtforms import StringField, SubmitField, PasswordField, BooleanField, ValidationError, FileField
 from wtforms.validators import DataRequired, Length, Email, Regexp, EqualTo
 import os
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from sqlalchemy.orm.attributes import InstrumentedAttribute
 from flask_mail import Mail
 from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_uploads import configure_uploads, UploadSet, DOCUMENTS
 
 app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -23,6 +25,10 @@ app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
+app.config['UPLOADED_DOCUMENTS_DEST'] = 'uploads/documents'
+
+documents = UploadSet('documents', DOCUMENTS)
+configure_uploads(app, documents)
 
 mail = Mail(app)
 db = SQLAlchemy(app)
@@ -57,14 +63,15 @@ class Homework(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     title = db.Column(db.String(128))
     description = db.Column(db.String)
-    limit_date = db.Column(db.DateTime)
+    limit_date = db.Column(db.Date)
     status = db.Column(db.String)
     student_comment = db.Column(db.String)
     grade = db.Column(db.DECIMAL(5,2))
-    date_sent = db.Column(db.DateTime)
+    date_sent = db.Column(db.Date)
     file_url = db.Column(db.String)
     enrollment_id = db.Column(db.Integer, db.ForeignKey('enrollment.id'))
 
+   
 
 class User(UserMixin, db.Model):
     __tablename__ = 'students'
@@ -179,6 +186,10 @@ class EditProfileForm(FlaskForm):
     email = StringField('Email UniQuindio', validators=[Length(0, 64)])
     submit = SubmitField('Editar')
 
+
+class SubmitHomework(FlaskForm):
+    homework = FileField('Documento')
+
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
@@ -228,13 +239,28 @@ def courses(username):
 
     return render_template('courses.html', result=result)
 
-@app.route('/activities/<enrollment_id>')
+@app.route('/activities/<int:enrollment_id>', methods=['GET', 'POST'])
 @login_required
 def activities(enrollment_id):
-    result = db.session.execute('Select courses.name As course, teachers.name As teacher, homework.title As homework, enrollment.id As enrollment, homework.description, homework.status, homework.limit_date, homework.student_comment, homework.grade, homework.date_sent From courses Inner Join enrollment On courses.id = enrollment.course_id Inner Join students On students.id = enrollment.student_id Inner Join teachers On teachers.id = courses.teacher_id Inner Join homework On enrollment.id = homework.enrollment_id Where enrollment.id = :val', {'val': enrollment_id})
-    return render_template('activities.html', result=result)
+    result = db.session.execute('Select courses.name As course, teachers.name As teacher, homework.title As homework, enrollment.id As enrollment, homework.description, homework.status, homework.limit_date, homework.student_comment, homework.grade, homework.date_sent, homework.file_url, homework.id From courses Inner Join enrollment On courses.id = enrollment.course_id Inner Join students On students.id = enrollment.student_id Inner Join teachers On teachers.id = courses.teacher_id Inner Join homework On enrollment.id = homework.enrollment_id Where enrollment.id = :val', {'val': enrollment_id})
+    
+    return render_template('activities.html', result=result, enrollment_id=enrollment_id)
 
-
+@app.route('/upload/<int:enrollment_id>/<int:homework_id>', methods=['GET', 'POST'])
+@login_required
+def upload(homework_id, enrollment_id):
+    form = SubmitHomework()
+    homework = Homework.query.filter(Homework.id==homework_id).first()
+    if request.method == 'POST':
+        homework.file_url = 'http://127.0.0.1:5000/uploads/documents'+ documents.save(form.homework.data)
+        homework.status = "Entregado"
+        db.session.add(homework)
+        db.session.commit()
+        flash('Actividad correctamente enviada')
+        return redirect(url_for('activities', enrollment_id=enrollment_id))
+       # db.session.commit()
+        #db.session.execute('UPDATE homework Set file_url = :val, status = "Entregado" Where id = :val', {'val': filename, 'val': id})
+    return render_template('upload.html', form=form, homework=homework)
 
 @app.route('/registro', methods=['GET', 'POST'])
 def registro():
@@ -261,7 +287,7 @@ def login():
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
         if user is not None and user.verify_password(form.password.data):
-            login_user(user, form.remember_me.data)
+            login_user(user, remember=True)
             next = request.args.get('next')
             if next is None or not next.startswith('/'):
                 next = url_for('home')
