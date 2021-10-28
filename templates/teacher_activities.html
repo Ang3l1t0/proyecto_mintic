@@ -34,7 +34,15 @@
             <td>{{ r.homework_date_sent }}</td>
             <td>{{ r.homework_student_comment }}</td>
             <td>{{ r.homework_grade}}</td>
-            <td>{{ r.homework_file_url}}</td>
+            <td>{{ r.homework_file_url}} {% if r.homework_file_url %}
+              <a href="{{ url_for('download_file', homework_id=r.homework_id)}}">
+                <span class="btn btn-dark btn-sm">Descargar</span>
+              </a>
+              <a href="#">
+                <span class="btn btn-warning btn-sm">Calificar</span>
+              </a>
+              {% endif %}</td>
+            
           </tr>
         {% endfor %}
       </tbody>
@@ -44,7 +52,20 @@
 {% block scripts %}
   <script>
     $(document).ready(function () {
-      $('#data').DataTable();
+      $('#data').DataTable({
+        "language":
+        {
+          "search": "Buscar:",
+          "lengthMenu":     "Mostrar _MENU_ entradas",
+          "info":           "Mostrando _START_ a _END_ de _TOTAL_ entradas",
+          "paginate": {
+            "first":      "Primero",
+            "last":       "Ultimo",
+            "next":       "Siguiente",
+            "previous":   "Anterior"
+        },
+        }
+      })
     });
   </script>
 {% endblock %}
