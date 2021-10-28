@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_modal_asign with context %}
+{% from "_macros.html" import render_field with context %}
+
+
+
+{% block page_content %}
+<div class="page-header">
+    <h1>Asignaturas Asignadas</h1>
+    <br/>
+
+    {% for teacher in result %}
+    <div class="card">
+        <h5 class="card-header">{{ teacher.courses_name }}</h5>
+            <div class="card-body">
+                <h6 class="card-title">Codigo: {{ teacher.courses_code}} </h6>
+                <p class= "card-text">
+                {{ teacher.courses_about }}
+              </p>
+            </div>
+        
+    </div>
+    <br/>
+
+    {% endfor %}
+{% endblock %}

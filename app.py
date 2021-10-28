@@ -154,7 +154,7 @@ def require_role(role):
         @wraps(func)
         def wrapped_function(*args, **kwargs):
             if not session['account_type'] == role:
-                return redirect("/")
+                return redirect("/404")
             else:
                 return func(*args, **kwargs)
         return wrapped_function
@@ -349,6 +349,16 @@ def login_teacher():
             return redirect(next)
         flash('Usuario o clave inválida')
     return render_template('login.html', form=form, name=name)
+
+@app.route('/teacher/courses/<username>', methods=['GET', 'POST'])
+@login_required
+@require_role(role="Teacher")
+def courses_teacher(username):
+    result = db.session.execute('Select teachers.username, courses.name As courses_name, courses.code As courses_code, courses.about As courses_about, courses.id As courses_id From courses Inner Join teachers On teachers.id = courses.teacher_id Where teachers.username = :val', {'val': username})
+    #print([row[0] for row in result])
+
+    return render_template('teacher_courses.html', result=result)
+
 
 @app.route('/logout')
 @login_required
