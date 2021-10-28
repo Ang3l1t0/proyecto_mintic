@@ -1,37 +1,50 @@
 {% extends "base.html" %}
-{% block head %}
-  {{ super() }}
-  <style type="text/css">
-  .row{
-    background-color: rgb(136, 245, 136);
-  }
-  .col-md-6{
-    background-color: lightgrey;
-    
-    border: 15px solid green;
-    
-  }
-    
-  </style>
-{% endblock %}
+
 
 {% block page_content %}
 <div class="page-header">
     <h1>Actividades de sdsds </h1>
 </div>
 <br/>
-{% for r in result %}
-    <div class="card">
-        <h5 class="card-header">{{ r.homework_title }} </h5>
-            <div class="card-body">
-                <h6 class="card-title"> {{ r.homework_description }} </h6>
 
-                    <p class= "card-text">
-                    {{ r.homework_description }}
-                    </p>
-                  </div>
-                </div>
-                <br/>
+    <table id="data" class="table table-striped">
+      <thead>
+        <tr>
+          <th>Título</th>
+          <th>Descripción</th>
+          <th>Fecha Límite</th>
+          <th>Status</th>
+          <th>Nombre</th>
+          <th>Apellido</th>
+          <th>Fecha de Entrega</th>
+          <th>Comentarios</th>
+          <th>Nota</th>
+          <th>Archivo</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in result %}
+          <tr>
+            <td>{{ r.homework_title }}</td>
+            <td>{{ r.homework_description }}</td>
+            <td>{{ r.homework_limit_date }}</td>
+            <td>{{ r.homework_status }}</td>
+            <td>{{ r.students_name }}</td>
+            <td>{{ r.students_last_name }}</td>
+            <td>{{ r.homework_date_sent }}</td>
+            <td>{{ r.homework_student_comment }}</td>
+            <td>{{ r.homework_grade}}</td>
+            <td>{{ r.homework_file_url}}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+{% endblock %}
 
-    {% endfor %}
+{% block scripts %}
+  <script>
+    $(document).ready(function () {
+      $('#data').DataTable();
+    });
+  </script>
 {% endblock %}
