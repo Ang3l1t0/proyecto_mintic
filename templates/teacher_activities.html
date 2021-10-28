@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block head %}
+  {{ super() }}
+  <style type="text/css">
+  .row{
+    background-color: rgb(136, 245, 136);
+  }
+  .col-md-6{
+    background-color: lightgrey;
+    
+    border: 15px solid green;
+    
+  }
+    
+  </style>
+{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <h1>Actividades de sdsds </h1>
+</div>
+<br/>
+{% for r in result %}
+    <div class="card">
+        <h5 class="card-header">{{ r.homework_title }} </h5>
+            <div class="card-body">
+                <h6 class="card-title"> {{ r.homework_description }} </h6>
+
+                    <p class= "card-text">
+                    {{ r.homework_description }}
+                    </p>
+                  </div>
+                </div>
+                <br/>
+
+    {% endfor %}
+{% endblock %}

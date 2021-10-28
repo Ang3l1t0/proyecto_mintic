@@ -226,9 +226,19 @@ def internal_server_error(e):
 
 @app.route('/user/<username>')
 @login_required
+@require_role(role="Student")
 def user(username):
 
     user = User.query.filter_by(username=username).first_or_404()
+    return render_template('user.html', user=user)
+
+
+@app.route('/teacher/user/<username>')
+@login_required
+@require_role(role="Teacher")
+def user_teacher(username):
+
+    user = Teacher.query.filter_by(username=username).first_or_404()
     return render_template('user.html', user=user)
 
 @app.route('/edit-profile', methods=['GET', 'POST'])
@@ -244,8 +254,11 @@ def edit_profile():
         db.session.add(current_user._get_current_object())
         db.session.commit()
         flash('Perfil actualizado.')
-        return redirect(url_for('user', username=current_user.username))
-    form.name.data = current_user.name  
+        if session['account_type'] == 'Student':
+            return redirect(url_for('user', username=current_user.username))
+        if session['account_type'] == 'Teacher':
+            return redirect(url_for('user_teacher', username=current_user.username))
+    form.name.data = current_user.name
     form.last_name.data = current_user.last_name
     form.cc.data = current_user.cc
     form.age.data = current_user.age
@@ -354,10 +367,17 @@ def login_teacher():
 @login_required
 @require_role(role="Teacher")
 def courses_teacher(username):
-    result = db.session.execute('Select teachers.username, courses.name As courses_name, courses.code As courses_code, courses.about As courses_about, courses.id As courses_id From courses Inner Join teachers On teachers.id = courses.teacher_id Where teachers.username = :val', {'val': username})
+    result = db.session.execute('Select teachers.id As teachers_id, teachers.username As teachers_username, courses.name As courses_name, courses.code As courses_code, courses.about As courses_about, courses.id As courses_id From courses Inner Join teachers On teachers.id = courses.teacher_id Where teachers.username = :val', {'val': username})
     #print([row[0] for row in result])
 
     return render_template('teacher_courses.html', result=result)
+
+@app.route('/teacher/activities/<int:teacher_id>/<int:course_id>', methods=['GET', 'POST'])
+@login_required
+@require_role(role="Teacher")
+def teacher_activities(teacher_id, course_id):
+    result = db.session.execute('Select teachers.id, courses.id As courses_id, homework.title As homework_title, homework.description As homework_description, homework.student_comment As homework_student_comment, students.name As students_name, students.last_name As students_last_name, homework.limit_date As homework_limit_date, homework.status As homework_status, homework.grade As homework_grade, homework.date_sent As homework_limit_date, homework.file_url As homework_file_url From enrollment Inner Join courses On courses.id = enrollment.course_id Inner Join homework On enrollment.id = homework.enrollment_id Inner Join teachers On teachers.id = courses.teacher_id Inner Join students On students.id = enrollment.student_id Where teachers.id = :val And courses.id = :val2', {'val': teacher_id, 'val2': course_id})
+    return render_template('teacher_activities.html', result=result, course_id=course_id)
 
 
 @app.route('/logout')

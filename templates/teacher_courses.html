@@ -17,6 +17,9 @@
                 <p class= "card-text">
                 {{ teacher.courses_about }}
               </p>
+              <a href="{{ url_for('teacher_activities', teacher_id=teacher.teachers_id, course_id=teacher.courses_id) }}">
+                <span class="btn btn-primary">Actividades</span>
+            </a>
             </div>
         
     </div>

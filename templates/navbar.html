@@ -10,7 +10,7 @@
           <a class="nav-link" href="{{ url_for('courses', username=current_user.username) }}">Cursos</a>
           <a class="nav-link" href="{{ url_for('logout') }}">Log Out</a>
       {% else  %}
-        <a class="nav-link" href="{{ url_for('user', username=current_user.username) }}">Perfil</a>
+        <a class="nav-link" href="{{ url_for('user_teacher', username=current_user.username) }}">Perfil</a>
         <a class="nav-link" href="{{ url_for('courses_teacher', username=current_user.username) }}">Cursos</a>
         <a class="nav-link" href="{{ url_for('logout') }}">Log Out</a>
       {% endif %}
