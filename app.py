@@ -352,18 +352,48 @@ def admin_teachers_edit_profile(username):
         return redirect(url_for('admin_teachers'))
     return render_template('admin_edit_teacher.html', form=form)
 
+
+@app.route('/admin/students/edit-profile/<username>', methods=['GET', 'POST'])
+@login_required
+def admin_students_edit_profile(username):
+    form = AdminEditTeacherForm()
+    if form.validate_on_submit():
+        student = User.query.filter_by(username=username).first_or_404()
+        if not form.email.data =="":
+            student.email=form.email.data
+        if not form.name.data =="":
+            student.name=form.name.data
+        if not form.last_name.data =="":
+            student.last_name=form.last_name.data
+        if not form.cc.data =="":
+            student.cc=form.cc.data
+        if not form.age.data =="":
+            student.age=form.age.data
+        if not form.genre.data =="":
+            student.genre=form.genre.data
+        if not form.password.data =="":
+            student.password=form.password.data
+        db.session.flush()
+        db.session.commit()
+        flash('Perfil actualizado.')
+        return redirect(url_for('admin_students'))
+    return render_template('admin_edit_teacher.html', form=form)
+
+
 @app.route('/courses/<username>')
 @login_required
-@require_role(role="Student")
 def courses(username):
-    result = db.session.execute('Select courses.name As course, courses.code As course_code, courses.about As course_about, teachers.name As teacher_name, teachers.last_name As teacher_last_name, students.username, enrollment.id As enrollment From students Inner Join enrollment On students.id = enrollment.student_id Inner Join courses On courses.id = enrollment.course_id Inner Join teachers On teachers.id = courses.teacher_id Where students.username = :val', {'val': current_user.username})
+    if session['account_type'] == 'Student':
+        user = current_user.username
+    elif session['account_type'] == 'Admin':
+        user = username 
+    result = db.session.execute('Select courses.name As course, courses.code As course_code, courses.about As course_about, teachers.name As teacher_name, teachers.last_name As teacher_last_name, students.username, enrollment.id As enrollment From students Inner Join enrollment On students.id = enrollment.student_id Inner Join courses On courses.id = enrollment.course_id Inner Join teachers On teachers.id = courses.teacher_id Where students.username = :val', {'val': user})
     #print([row[0] for row in result])
 
     return render_template('courses.html', result=result)
 
 @app.route('/activities/<int:enrollment_id>', methods=['GET', 'POST'])
 @login_required
-@require_role(role="Student")
 def activities(enrollment_id):
     result = db.session.execute('Select courses.name As course, teachers.name As teacher_name, teachers.last_name As teacher_last_name, homework.title As homework, enrollment.id As enrollment, homework.description, homework.status, homework.limit_date, homework.student_comment, homework.grade, homework.date_sent, homework.file_url, homework.id From courses Inner Join enrollment On courses.id = enrollment.course_id Inner Join students On students.id = enrollment.student_id Inner Join teachers On teachers.id = courses.teacher_id Inner Join homework On enrollment.id = homework.enrollment_id Where enrollment.id = :val', {'val': enrollment_id})
     
@@ -371,7 +401,6 @@ def activities(enrollment_id):
 
 @app.route('/upload/<int:enrollment_id>/<int:homework_id>', methods=['GET', 'POST'])
 @login_required
-@require_role(role="Student")
 def upload(homework_id, enrollment_id):
     form = SubmitHomework()
     homework = Homework.query.filter(Homework.id==homework_id).first()
@@ -469,13 +498,29 @@ def admin_login():
 def admin_teachers_course(teacher_id):
     form = ChoiceClassForm()
     if form.validate_on_submit():
-        print(form.opts.data)
         course = Course.query.filter_by(name=str(form.opts.data)).first_or_404()
         course.teacher_id = teacher_id
         db.session.flush()
         db.session.commit()
         flash('Curso Asignado.')
         return redirect(url_for('admin_teachers'))
+    return render_template('admin_teachers_course.html', form=form)
+
+@app.route('/admin/students/select-course/<int:student_id>', methods=['GET', 'POST'])
+@login_required
+@require_role(role="Admin")
+def admin_students_course(student_id):
+    form = ChoiceClassForm()
+    if form.validate_on_submit():
+        course = Course.query.filter_by(name=str(form.opts.data)).first_or_404()
+        course_id=course.id
+        db.session.flush()
+        db.session.commit()
+        enrollment = Enrollment(student_id=student_id, course_id=course_id)
+        db.session.add(enrollment)
+        db.session.commit()
+        flash('Curso asignado correctamente.')
+        return redirect(url_for('admin_students'))
     return render_template('admin_teachers_course.html', form=form)
 
 @app.route('/admin/teachers', methods=['GET', 'POST'])
@@ -485,6 +530,20 @@ def admin_teachers():
     result = db.session.execute('Select teachers.username As teacher_username, teachers.name As teacher_name, teachers.last_name As teacher_last_name, teachers.cc As teacher_cc, teachers.age As teacher_age, teachers.genre As teacher_genre, Group_Concat(courses.name) As teacher_courses From teachers Inner Join courses On teachers.id = courses.teacher_id Group By teachers.username, teachers.name')
     result2 = db.session.execute('Select * From teachers')
     return render_template('admin_teachers.html', result=result, result2=result2)
+
+@app.route('/admin/students', methods=['GET', 'POST'])
+@login_required
+@require_role(role="Admin")
+def admin_students():
+    result = db.session.execute('Select * From students')
+    return render_template('admin_students.html', result=result)
+
+@app.route('/admin/courses', methods=['GET', 'POST'])
+@login_required
+@require_role(role="Admin")
+def admin_courses():
+    result = db.session.execute('Select courses.id As course_id, courses.name As course_name, courses.code As course_code, courses.about As courses_about, teachers.name As teacher_name, teachers.last_name As teacher_last_name From courses Inner Join teachers On teachers.id = courses.teacher_id')
+    return render_template('admin_courses.html', result=result)
 
 @app.route('/admin/teachers/create', methods=['GET', 'POST'])
 @login_required
@@ -504,6 +563,26 @@ def admin_teachers_create():
         db.session.commit()
         flash('Profesor registrado correctamente')
         return redirect(url_for('admin_teachers'))
+    return render_template('admin_teachers_create.html', form=form)
+
+@app.route('/admin/students/create', methods=['GET', 'POST'])
+@login_required
+@require_role(role="Admin")
+def admin_students_create():
+    form = RegForm()
+    if form.validate_on_submit():
+        user = User(name=form.name.data,
+                    last_name=form.last_name.data,
+                    cc=form.cc.data,
+                    age=form.age.data,
+                    email=form.email.data,
+                    genre=form.genre.data,
+                    username=form.username.data,
+                    password=form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        flash('Estudiante registrado correctamente')
+        return redirect(url_for('admin_students'))
     return render_template('admin_teachers_create.html', form=form)
 
 @app.route('/teachers/courses/<username>', methods=['GET', 'POST'])
