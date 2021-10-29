@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_field with context %}
+
+{% block head %}
+  {{ super() }}
+  <style type="text/css">
+    
+    body{
+        margin: 0;
+        font-size: .9rem;
+        font-weight: 400;
+        line-height: 1.6;
+        color: #212529;
+        text-align: left;
+        background-color: #f5f8fa;
+    }
+
+    .navbar-laravel
+    {
+        box-shadow: 0 2px 4px rgba(0,0,0,.04);
+    }
+
+    .navbar-brand , .nav-link, .my-form, .login-form
+    {
+        font-family: Raleway, sans-serif;
+    }
+
+    .my-form
+    {
+        padding-top: 1.5rem;
+        padding-bottom: 1.5rem;
+    }
+
+    .my-form .row
+    {
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .login-form
+    {
+        padding-top: 1.5rem;
+        padding-bottom: 1.5rem;
+    }
+
+    .login-form .row
+    {
+        margin-left: 0;
+        margin-right: 0;
+    }
+    .form-group{
+        padding: 10px;
+    }
+  </style>
+{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <h1>Crear Actividad</h1>
+</div>
+
+<main class="login-form">
+    <div class="cotainer">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">Crear actividad</div>
+                    <div class="card-body">
+                        <!-- llama al macro para generar los fields del form registro -->
+
+                        <form action="" method="POST">
+                            {{ form.hidden_tag() }}
+                            {{ render_field(form.title) }}
+                            {{ render_field(form.description) }}
+                            {{ render_field(form.limit_date) }}
+
+                            <div class="col-md-6 offset-md-4">
+                                <!-- llamando boton submit del form  -->
+
+                                {{ form.submit(class="btn btn-warning")}}
+                            
+                            </div>
+                    </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+</main>
+
+{% endblock %}

@@ -3,7 +3,10 @@
 
 {% block page_content %}
 <div class="page-header">
-    <h1>Actividades </h1>
+    <h1>Actividades </h1> 
+    <br/>
+    <a href="{{ url_for('teacher_create_activity', teacher_id=teacher_id, course_id=course_id) }}">
+      <span class="btn btn-warning btn-sm">Crear Actividad</span></a>
 </div>
 <br/>
 

@@ -1,7 +1,7 @@
 from flask import Flask, render_template, redirect, url_for, session, flash, request, send_file
 from flask_moment import Moment
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField, BooleanField, ValidationError, FileField, TextAreaField,  DecimalField
+from wtforms import StringField, SubmitField, PasswordField, BooleanField, ValidationError, FileField, TextAreaField,  DecimalField, DateTimeField
 from wtforms.validators import DataRequired, Length, Email, Regexp, EqualTo, NumberRange
 import os
 from flask_sqlalchemy import SQLAlchemy
@@ -12,6 +12,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_uploads import configure_uploads, UploadSet, DOCUMENTS
 from datetime import datetime
 from functools import wraps
+from flask_breadcrumbs import Breadcrumbs, register_breadcrumb
+
 
 
 
@@ -37,6 +39,7 @@ mail = Mail(app)
 db = SQLAlchemy(app)
 moment = Moment(app)
 migrate = Migrate(app, db)
+Breadcrumbs(app=app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
@@ -217,7 +220,11 @@ class GradeForm(FlaskForm):
     grade =  DecimalField('Nota', validators=[NumberRange(max=5)])
     submit = SubmitField('Enviar')
 
-
+class CreateActForm(FlaskForm):
+    title = StringField('Titulo', validators=[DataRequired()])
+    description = TextAreaField('Descripción', validators=[DataRequired()])
+    limit_date = DateTimeField('Fecha Límite', validators=[DataRequired(message='Fecha en formato AAAA-MM-DD HH:MM:SS')])
+    submit = SubmitField('Editar')
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -401,6 +408,26 @@ def teacher_grade(teacher_id, course_id, homework_id):
        # db.session.commit()
         #db.session.execute('UPDATE homework Set file_url = :val, status = "Entregado" Where id = :val', {'val': filename, 'val': id})
     return render_template('teacher_grade.html', form=form, homework=homework, homework_name=homework_name)
+
+@app.route('/teacher/create_activity/<int:teacher_id>/<int:course_id>', methods=['GET', 'POST'])
+@login_required
+@require_role(role="Teacher")
+def teacher_create_activity(teacher_id, course_id):
+    result = db.session.execute('Select enrollment.id As id From enrollment where enrollment.course_id = :val', {'val': course_id})
+    res = [r for r, in result]
+    form = CreateActForm()
+    if form.validate_on_submit():
+        for i in res:
+            homework = Homework(title=form.title.data,
+                    description=form.description.data,
+                    limit_date=form.limit_date.data,
+                    status = "No Entregado",
+                    enrollment_id=i)
+            db.session.add(homework)
+            db.session.commit()
+        flash('Actividad creada con éxito!')
+        return redirect(url_for('teacher_activities', teacher_id=teacher_id, course_id=course_id))
+    return render_template('teacher_create_act.html', form=form)
 
 @app.route('/logout')
 @login_required
