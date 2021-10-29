@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+
+{% block page_content %}
+<div class="page-header">
+    <h1>Editar Profesor</h1>
+</div>
+<br/>
+<main class="login-form">
+    <div class="cotainer">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">Edición</div>
+                    <div class="card-body">
+                        <!-- llama al macro para generar los fields del form registro -->
+
+                        <form action="" method="POST">
+                            {{ form.hidden_tag() }}
+                            <div class="form-group row">
+                                <label for="{{ form.name.name }}" class="col-md-4 col-form-label text-md-right">{{ form.name.label }}</label>
+                                <div class="col-md-6">
+                                    {{ form.name(class="form-control")}}
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="{{ form.last_name.name }}" class="col-md-4 col-form-label text-md-right">{{ form.last_name.label }}</label>
+                                <div class="col-md-6">
+                                    {{ form.last_name(class="form-control")}}
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="{{ form.cc.name }}" class="col-md-4 col-form-label text-md-right">{{ form.cc.label }}</label>
+                                <div class="col-md-6">
+                                    {{ form.cc(class="form-control")}}
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="{{ form.age.name }}" class="col-md-4 col-form-label text-md-right">{{ form.age.label }}</label>
+                                <div class="col-md-6">
+                                    {{ form.age(class="form-control")}}
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="{{ form.genre.name }}" class="col-md-4 col-form-label text-md-right">{{ form.genre.label }}</label>
+                                <div class="col-md-6">
+                                    {{ form.genre(class="form-control")}}
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="{{ form.email.name }}" class="col-md-4 col-form-label text-md-right">{{ form.email.label }}</label>
+                                <div class="col-md-6">
+                                    {{ form.email(class="form-control")}}
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="{{ form.password.name }}" class="col-md-4 col-form-label text-md-right">{{ form.password.label }}</label>
+                                <div class="col-md-6">
+                                    {{ form.password(class="form-control")}}
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="{{ form.password2.name }}" class="col-md-4 col-form-label text-md-right">{{ form.password2.label }}</label>
+                                <div class="col-md-6">
+                                    {{ form.password2(class="form-control")}}
+                                </div>
+                            </div>
+                             <br/>
+                            <div class="col-md-6 offset-md-4">
+                                <!-- llamando boton submit del form  -->
+
+                                {{ form.submit(class="btn btn-warning")}}
+
+                            </div>
+                    </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+</main>
+
+{% endblock %}

@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_modal_asign with context %}
+{% from "_macros.html" import render_field with context %}
+
+
+
+{% block page_content %}
+<div class="page-header">
+    <h1>Profesores con Cursos</h1> 
+    <br/>
+    
+</div>
+<br/>
+
+    <table id="data" class="table table-striped">
+      <thead>
+        <tr>
+          <th>Usuario</th>
+          <th>Nombre</th>
+          <th>Apellido</th>
+          <th>Cédula</th>
+          <th>Edad</th>
+          <th>Género</th>
+          <th>Cursos</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in result %}
+          <tr>
+            <td>{{ r.teacher_username }}</td>
+            <td>{{ r.teacher_name }}</td>
+            <td>{{ r.teacher_last_name }}</td>
+            <td>{{ r.teacher_cc }}</td>
+            <td>{{ r.teacher_age }}</td>
+            <td>{{ r.teacher_genre}}</td>
+            <td>{{ r.teacher_courses }}</td>
+            
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <br/>
+    <div class="page-header">
+        <h1>Profesores General</h1> 
+        <br/>
+        
+    </div>
+    <br/>
+    
+        <table id="data2" class="table table-striped">
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Nombre</th>
+              <th>Apellido</th>
+              <th>Cédula</th>
+              <th>Edad</th>
+              <th>Género</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r2 in result2 %}
+    
+              <tr>
+                <td>{{ r2.username }}</td>
+                <td>{{ r2.name }}</td>
+                <td>{{ r2.last_name }}</td>
+                <td>{{ r2.cc }}</td>
+                <td>{{ r2.age }}</td>
+                <td>{{ r2.genre}}</td>
+                <td><a href="{{ url_for('admin_teachers_edit_profile', username=r2.username) }}">
+                    <span class="btn btn-warning btn-sm">Editar</span>
+                  </a></td>
+                
+              </tr>
+
+            {% endfor %}
+          </tbody>
+        </table>
+    
+{% endblock %}
+
+{% block scripts %}
+  <script>
+    $(document).ready(function () {
+      $('#data').DataTable({
+        "language":
+        {
+          "search": "Buscar:",
+          "lengthMenu":     "Mostrar _MENU_ entradas",
+          "info":           "Mostrando _START_ a _END_ de _TOTAL_ entradas",
+          "paginate": {
+            "first":      "Primero",
+            "last":       "Ultimo",
+            "next":       "Siguiente",
+            "previous":   "Anterior"
+        },
+        }
+      })
+    });
+    $(document).ready(function () {
+        $('#data2').DataTable({
+          "language":
+          {
+            "search": "Buscar:",
+            "lengthMenu":     "Mostrar _MENU_ entradas",
+            "info":           "Mostrando _START_ a _END_ de _TOTAL_ entradas",
+            "paginate": {
+              "first":      "Primero",
+              "last":       "Ultimo",
+              "next":       "Siguiente",
+              "previous":   "Anterior"
+          },
+          }
+        })
+      });
+  </script>
+{% endblock %}
+

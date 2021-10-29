@@ -229,6 +229,25 @@ class EditProfileForm(FlaskForm):
     email = StringField('Email UniQuindio', validators=[Length(0, 64)])
     submit = SubmitField('Editar')
 
+class AdminEditTeacherForm(FlaskForm):
+    name = StringField('Nombre', validators=[Length(0, 64)])
+    last_name = StringField('Apellido', validators=[Length(0, 64)])
+    cc = StringField('Cédula', validators=[Length(0, 64)])
+    age = StringField('Edad', validators=[Length(0, 64)])
+    genre = StringField('Género', validators=[Length(0, 64)])
+    email = StringField('Email UniQuindio', validators=[Length(0, 64)])
+    password = PasswordField('Password', validators=[EqualTo('password2', message='Passwords deben ser iguales')])
+    password2 = PasswordField('Confirma password')
+    submit = SubmitField('Editar')
+
+    def validate_email(self, field):
+        if Teacher.query.filter_by(email=field.data).first():
+            raise ValidationError('Email ya registrado')
+
+    def validate_username(self, field):
+        if Teacher.query.filter_by(username=field.data).first():
+            raise ValidationError('Usuario ya registrado')
+
 
 class SubmitHomework(FlaskForm):
     homework = FileField('Documento')
@@ -297,7 +316,31 @@ def edit_profile():
     form.email.data = current_user.email
     return render_template('edit_profile.html', form=form)
 
-
+@app.route('/admin/teachers/edit-profile/<username>', methods=['GET', 'POST'])
+@login_required
+def admin_teachers_edit_profile(username):
+    form = AdminEditTeacherForm()
+    if form.validate_on_submit():
+        teacher = Teacher.query.filter_by(username=username).first_or_404()
+        if not form.email.data =="":
+            teacher.email=form.email.data
+        if not form.name.data =="":
+            teacher.name=form.name.data
+        if not form.last_name.data =="":
+            teacher.last_name=form.last_name.data
+        if not form.cc.data =="":
+            teacher.cc=form.cc.data
+        if not form.age.data =="":
+            teacher.age=form.age.data
+        if not form.genre.data =="":
+            teacher.genre=form.genre.data
+        if not form.password.data =="":
+            teacher.password=form.password.data
+        db.session.flush()
+        db.session.commit()
+        flash('Perfil actualizado.')
+        return redirect(url_for('admin_teachers'))
+    return render_template('admin_edit_teacher.html', form=form)
 
 @app.route('/courses/<username>')
 @login_required
@@ -409,6 +452,15 @@ def admin_login():
             return redirect(next)
         flash('Usuario o clave inválida')
     return render_template('admin_login.html', form=form, name=name)
+
+@app.route('/admin/teachers', methods=['GET', 'POST'])
+@login_required
+@require_role(role="Admin")
+def admin_teachers():
+    result = db.session.execute('Select teachers.username As teacher_username, teachers.name As teacher_name, teachers.last_name As teacher_last_name, teachers.cc As teacher_cc, teachers.age As teacher_age, teachers.genre As teacher_genre, Group_Concat(courses.name) As teacher_courses From teachers Inner Join courses On teachers.id = courses.teacher_id Group By teachers.username, teachers.name')
+    result2 = db.session.execute('Select * From teachers')
+    return render_template('admin_teachers.html', result=result, result2=result2)
+
 
 @app.route('/teacher/courses/<username>', methods=['GET', 'POST'])
 @login_required
