@@ -11,7 +11,7 @@
         <br/>
         
     </div>
-    <a href="{{ url_for('admin_students_create') }}">
+    <a href="{{ url_for('admin_courses_create') }}">
       <span class="btn btn-warning ">Crear Asignatura</span></a>
     <br/>
     <br/>
@@ -24,6 +24,8 @@
               <th>Descripción</th>
               <th>Nombre Profesor</th>
               <th>Apellido</th>
+              <th>Acciones</th>
+
             </tr>
           </thead>
           <tbody>
@@ -35,6 +37,9 @@
                 <td>{{ r2.course_about }}</td>
                 <td>{{ r2.teacher_name }}</td>
                 <td>{{ r2.teacher_last_name }}</td>
+                <td><a href="{{ url_for('admin_courses_edit', id=r2.course_id) }}">
+                  <span class="btn btn-warning btn-sm">Editar</span>
+                </a></td>
 
 
                 

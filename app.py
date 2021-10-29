@@ -167,6 +167,9 @@ class Course(db.Model):
 def choice_query():
     return Course.query
 
+def choice_teacher_query():
+    return Teacher.query
+
 
 @app.shell_context_processor
 def make_shell_context():
@@ -269,8 +272,18 @@ class CreateActForm(FlaskForm):
     limit_date = DateTimeField('Fecha Límite', validators=[DataRequired(message='Fecha en formato AAAA-MM-DD HH:MM:SS')])
     submit = SubmitField('Editar')
 
+class EditCourse(FlaskForm):
+    name = StringField('Nombre')
+    code = StringField('Código')
+    about = TextAreaField('Acerca de')
+    submit = SubmitField('Editar')
+
 class ChoiceClassForm(FlaskForm):
     opts = QuerySelectField(query_factory=choice_query, allow_blank=True, get_label='name')
+    submit = SubmitField('Agregar Curso')
+
+class ChoiceTeacherForm(FlaskForm):
+    opts = QuerySelectField(query_factory=choice_teacher_query, allow_blank=True, get_label='name')
     submit = SubmitField('Agregar Curso')
 
 
@@ -328,6 +341,7 @@ def edit_profile():
 
 @app.route('/admin/teachers/edit-profile/<username>', methods=['GET', 'POST'])
 @login_required
+@require_role(role="Admin")
 def admin_teachers_edit_profile(username):
     form = AdminEditTeacherForm()
     if form.validate_on_submit():
@@ -355,6 +369,7 @@ def admin_teachers_edit_profile(username):
 
 @app.route('/admin/students/edit-profile/<username>', methods=['GET', 'POST'])
 @login_required
+@require_role(role="Admin")
 def admin_students_edit_profile(username):
     form = AdminEditTeacherForm()
     if form.validate_on_submit():
@@ -378,6 +393,25 @@ def admin_students_edit_profile(username):
         flash('Perfil actualizado.')
         return redirect(url_for('admin_students'))
     return render_template('admin_edit_teacher.html', form=form)
+
+@app.route('/admin/courses/edit/<int:id>', methods=['GET', 'POST'])
+@login_required
+@require_role(role="Admin")
+def admin_courses_edit(id):
+    form = EditCourse()
+    if form.validate_on_submit():
+        course = Course.query.filter_by(id=id).first_or_404()
+        if not form.name.data =="":
+            course.name=form.name.data
+        if not form.code.data =="":
+            course.code=form.code.data
+        if not form.about.data =="":
+            course.about=form.about.data
+        db.session.flush()
+        db.session.commit()
+        flash('Curso actualizado.')
+        return redirect(url_for('admin_courses'))
+    return render_template('admin_edit_course.html', form=form)
 
 
 @app.route('/courses/<username>')
@@ -542,30 +576,25 @@ def admin_students():
 @login_required
 @require_role(role="Admin")
 def admin_courses():
-    result = db.session.execute('Select courses.id As course_id, courses.name As course_name, courses.code As course_code, courses.about As courses_about, teachers.name As teacher_name, teachers.last_name As teacher_last_name From courses Inner Join teachers On teachers.id = courses.teacher_id')
+    result = db.session.execute('Select courses.id As course_id, courses.name As course_name, courses.code As course_code, courses.about As course_about, teachers.name As teacher_name, teachers.last_name As teacher_last_name From courses Inner Join teachers On teachers.id = courses.teacher_id')
     return render_template('admin_courses.html', result=result)
 
-@app.route('/admin/teachers/create', methods=['GET', 'POST'])
+@app.route('/admin/courses/create', methods=['GET', 'POST'])
 @login_required
 @require_role(role="Admin")
-def admin_teachers_create():
-    form = RegForm()
+def admin_courses_create():
+    form = EditCourse()
     if form.validate_on_submit():
-        teacher = Teacher(name=form.name.data,
-                    last_name=form.last_name.data,
-                    cc=form.cc.data,
-                    age=form.age.data,
-                    email=form.email.data,
-                    genre=form.genre.data,
-                    username=form.username.data,
-                    password=form.password.data)
-        db.session.add(teacher)
+        courses = Course(name=form.name.data,
+                    code=form.code.data,
+                    about=form.about.data,)
+        db.session.add(courses)
         db.session.commit()
-        flash('Profesor registrado correctamente')
-        return redirect(url_for('admin_teachers'))
-    return render_template('admin_teachers_create.html', form=form)
+        flash('Curso creado correctamente')
+        return redirect(url_for('admin_courses'))
+    return render_template('admin_courses_create.html', form=form)
 
-@app.route('/admin/students/create', methods=['GET', 'POST'])
+@app.route('/admin/student/create', methods=['GET', 'POST'])
 @login_required
 @require_role(role="Admin")
 def admin_students_create():
@@ -583,6 +612,26 @@ def admin_students_create():
         db.session.commit()
         flash('Estudiante registrado correctamente')
         return redirect(url_for('admin_students'))
+    return render_template('admin_teachers_create.html', form=form)
+
+@app.route('/admin/teacher/create', methods=['GET', 'POST'])
+@login_required
+@require_role(role="Admin")
+def admin_teachers_create():
+    form = RegForm()
+    if form.validate_on_submit():
+        teacher = Teacher(name=form.name.data,
+                    last_name=form.last_name.data,
+                    cc=form.cc.data,
+                    age=form.age.data,
+                    email=form.email.data,
+                    genre=form.genre.data,
+                    username=form.username.data,
+                    password=form.password.data)
+        db.session.add(teacher)
+        db.session.commit()
+        flash('Profesor registrado correctamente')
+        return redirect(url_for('admin_teachers'))
     return render_template('admin_teachers_create.html', form=form)
 
 @app.route('/teachers/courses/<username>', methods=['GET', 'POST'])

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+
+{% block page_content %}
+<div class="page-header">
+    <h1>Editar Curso</h1>
+</div>
+<br/>
+<main class="login-form">
+    <div class="cotainer">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">Edición</div>
+                    <div class="card-body">
+                        <!-- llama al macro para generar los fields del form registro -->
+
+                        <form action="" method="POST">
+                            {{ form.hidden_tag() }}
+                            <div class="form-group row">
+                                <label for="{{ form.name.name }}" class="col-md-4 col-form-label text-md-right">{{ form.name.label }}</label>
+                                <div class="col-md-6">
+                                    {{ form.name(class="form-control")}}
+                                </div>
+                            </div>
+                            <br/>
+                            <div class="form-group row">
+                                <label for="{{ form.code.name }}" class="col-md-4 col-form-label text-md-right">{{ form.code.label }}</label>
+                                <div class="col-md-6">
+                                    {{ form.code(class="form-control")}}
+                                </div>
+                            </div>
+                            <br/>
+                            <div class="form-group row">
+                                <label for="{{ form.about.name }}" class="col-md-4 col-form-label text-md-right">{{ form.about.label }}</label>
+                                <div class="col-md-6">
+                                    {{ form.about(class="form-control")}}
+                                </div>
+                            </div>
+                            
+                             <br/>
+                            <div class="col-md-6 offset-md-4">
+                                <!-- llamando boton submit del form  -->
+
+                                {{ form.submit(class="btn btn-warning")}}
+
+                            </div>
+                    </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+</main>
+
+{% endblock %}
