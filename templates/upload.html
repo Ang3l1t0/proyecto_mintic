@@ -1,15 +1,4 @@
 {% extends "base.html" %}
-{% from "_macros.html" import render_modal_asign with context %}
-{% from "_macros.html" import render_field with context %}
-{% block head %}
-  {{ super() }}
-  <style type="text/css">
-  .col-md-12{
-    background-color: rgb(136, 245, 136);
-  }
-    
-  </style>
-{% endblock %}
 
 
 {% block page_content %}
@@ -45,7 +34,7 @@
                               <div class="col-md-6 offset-md-4">
                                   <!-- llamando boton submit del form  -->
   
-                                  {{ form.submit(class="btn btn-primary")}}
+                                  {{ form.submit(class="btn btn-warning")}}
   
                               </div>
                       </div>

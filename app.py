@@ -1,8 +1,8 @@
 from flask import Flask, render_template, redirect, url_for, session, flash, request, send_file
 from flask_moment import Moment
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField, BooleanField, ValidationError, FileField, TextAreaField
-from wtforms.validators import DataRequired, Length, Email, Regexp, EqualTo
+from wtforms import StringField, SubmitField, PasswordField, BooleanField, ValidationError, FileField, TextAreaField,  DecimalField
+from wtforms.validators import DataRequired, Length, Email, Regexp, EqualTo, NumberRange
 import os
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -213,6 +213,12 @@ class SubmitHomework(FlaskForm):
     comment = TextAreaField('Comentarios')
     submit = SubmitField('Enviar')
 
+class GradeForm(FlaskForm):
+    grade =  DecimalField('Nota', validators=[NumberRange(max=5)])
+    submit = SubmitField('Enviar')
+
+
+
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
@@ -271,8 +277,7 @@ def edit_profile():
 @login_required
 @require_role(role="Student")
 def courses(username):
-    user = User.query.filter(User.username==username).first()
-    result = db.session.execute('Select students.name, courses.name As course, teachers.name As teacher, homework.title As homework, enrollment.id As enrollment From courses Inner Join enrollment On courses.id = enrollment.course_id Inner Join students On students.id = enrollment.student_id Inner Join teachers On teachers.id = courses.teacher_id Inner Join homework On enrollment.id = homework.enrollment_id Where students.username = :val', {'val': current_user.username})
+    result = db.session.execute('Select courses.name As course, courses.code As course_code, courses.about As course_about, teachers.name As teacher_name, teachers.last_name As teacher_last_name, students.username, enrollment.id As enrollment From students Inner Join enrollment On students.id = enrollment.student_id Inner Join courses On courses.id = enrollment.course_id Inner Join teachers On teachers.id = courses.teacher_id Where students.username = :val', {'val': current_user.username})
     #print([row[0] for row in result])
 
     return render_template('courses.html', result=result)
@@ -281,7 +286,7 @@ def courses(username):
 @login_required
 @require_role(role="Student")
 def activities(enrollment_id):
-    result = db.session.execute('Select courses.name As course, teachers.name As teacher, homework.title As homework, enrollment.id As enrollment, homework.description, homework.status, homework.limit_date, homework.student_comment, homework.grade, homework.date_sent, homework.file_url, homework.id From courses Inner Join enrollment On courses.id = enrollment.course_id Inner Join students On students.id = enrollment.student_id Inner Join teachers On teachers.id = courses.teacher_id Inner Join homework On enrollment.id = homework.enrollment_id Where enrollment.id = :val', {'val': enrollment_id})
+    result = db.session.execute('Select courses.name As course, teachers.name As teacher_name, teachers.last_name As teacher_last_name, homework.title As homework, enrollment.id As enrollment, homework.description, homework.status, homework.limit_date, homework.student_comment, homework.grade, homework.date_sent, homework.file_url, homework.id From courses Inner Join enrollment On courses.id = enrollment.course_id Inner Join students On students.id = enrollment.student_id Inner Join teachers On teachers.id = courses.teacher_id Inner Join homework On enrollment.id = homework.enrollment_id Where enrollment.id = :val', {'val': enrollment_id})
     
     return render_template('activities.html', result=result, enrollment_id=enrollment_id)
 
@@ -376,9 +381,26 @@ def courses_teacher(username):
 @login_required
 @require_role(role="Teacher")
 def teacher_activities(teacher_id, course_id):
-    result = db.session.execute('Select teachers.id, courses.id As courses_id, homework.title As homework_title, homework.description As homework_description, homework.student_comment As homework_student_comment, students.name As students_name, students.last_name As students_last_name, homework.limit_date As homework_limit_date, homework.status As homework_status, homework.grade As homework_grade, homework.date_sent As homework_date_sent, homework.id As homework_id, homework.file_url As homework_file_url From enrollment Inner Join courses On courses.id = enrollment.course_id Inner Join homework On enrollment.id = homework.enrollment_id Inner Join teachers On teachers.id = courses.teacher_id Inner Join students On students.id = enrollment.student_id Where teachers.id = :val And courses.id = :val2', {'val': teacher_id, 'val2': course_id})
-    return render_template('teacher_activities.html', result=result, course_id=course_id)
+    result = db.session.execute('Select teachers.id, courses.name As course_name, courses.code As course_code, courses.id As courses_id, homework.title As homework_title, homework.description As homework_description, homework.student_comment As homework_student_comment, students.name As students_name, students.last_name As students_last_name, homework.limit_date As homework_limit_date, homework.status As homework_status, homework.grade As homework_grade, homework.date_sent As homework_date_sent, homework.id As homework_id, homework.file_url As homework_file_url From enrollment Inner Join courses On courses.id = enrollment.course_id Inner Join homework On enrollment.id = homework.enrollment_id Inner Join teachers On teachers.id = courses.teacher_id Inner Join students On students.id = enrollment.student_id Where teachers.id = :val And courses.id = :val2', {'val': teacher_id, 'val2': course_id})
+    return render_template('teacher_activities.html', result=result, teacher_id=teacher_id, course_id=course_id)
 
+@app.route('/grade/<int:teacher_id>/<int:course_id>/<int:homework_id>', methods=['GET', 'POST'])
+@login_required
+@require_role(role="Teacher")
+def teacher_grade(teacher_id, course_id, homework_id):
+    form = GradeForm()
+    homework = Homework.query.filter(Homework.id==homework_id).first()
+    homework_name = homework.title
+    if request.method == 'POST':
+        homework.status = "Entregado y Calificado"
+        homework.grade = form.grade.data
+        db.session.add(homework)
+        db.session.commit()
+        flash('Actividad calificada correctamente')
+        return redirect(url_for('teacher_activities', teacher_id=teacher_id, course_id=course_id))
+       # db.session.commit()
+        #db.session.execute('UPDATE homework Set file_url = :val, status = "Entregado" Where id = :val', {'val': filename, 'val': id})
+    return render_template('teacher_grade.html', form=form, homework=homework, homework_name=homework_name)
 
 @app.route('/logout')
 @login_required

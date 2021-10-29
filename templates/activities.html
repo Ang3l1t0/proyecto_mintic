@@ -1,66 +1,72 @@
 {% extends "base.html" %}
-{% block head %}
-  {{ super() }}
-  <style type="text/css">
-  .row{
-    background-color: rgb(136, 245, 136);
-  }
-  .col-md-6{
-    background-color: lightgrey;
-    
-    border: 15px solid green;
-    
-  }
-    
-  </style>
-{% endblock %}
+
 
 {% block page_content %}
+
 <div class="page-header">
-    <h1>Actividades de {{ course }} </h1>
+  <h1>Actividades </h1>
 </div>
-{% for homework in result %}
-  {% if homework.status == 'No entregado' %}
-    <div class="card">
-        <h5 class="card-header">{{ homework.homework }} </h5>
-            <div class="card-body">
-                <h6 class="card-title">Status: {{ homework.status }}   Fecha Limite: {{ homework.limit_date }}</h6>
+<br/>
 
-                    <p class= "card-text">
-                    {{ homework.description }}
-                    </p>
-                  <p class= "card-text">
-                    Profesor: {{ homework.teacher }}
-                  </p>
+  <table id="data" class="table table-striped">
+    <thead>
+      <tr>
+        <th>Título</th>
+        <th>Descripción</th>
+        <th>Fecha Límite</th>
+        <th>Status</th>
+        <th>Profesor</th>
+        <th>Fecha de Entrega</th>
+        <th>Comentarios</th>
+        <th>Nota</th>
+        <th>Archivo</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for homework in result %}
+        <tr>
+          <td>{{ homework.homework }}</td>
+          <td>{{ homework.description }}</td>
+          <td>{{ homework.limit_date }}</td>
+          <td>{{ homework.status }}</td>
+          <td>{{ homework.teacher_name }} {{ homework.teacher_last_name }}</td>
+          <td>{{ homework.date_sent }}</td>
+          <td>{{ homework.student_comment }}</td>
+          <td>{{ homework.grade}}</td>
+          <td>{{ homework.file_url}} {% if homework.file_url %}
+            <a href="{{ url_for('download_file', homework_id=homework.id)}}">
+              <span class="btn btn-dark btn-sm">Descargar</span>
+            </a>{% endif %}
+            {% if homework.status != "Entregado y Calificado" %}
+            <a href="{{ url_for('upload', homework_id=homework.id, enrollment_id=enrollment_id) }}">
+              <span class="btn btn-warning btn-sm">Enviar</span>
+            </a>
+            {% endif %}
+            </td>
+          
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}
 
-                  <a href="{{ url_for('upload', homework_id=homework.id, enrollment_id=enrollment_id) }}">
-                    <span class="btn btn-primary">Enviar Actividad</span>
-                  </a>
-  {% else %}
-
-
-  <div class="card">
-    <h5 class="card-header">{{ homework.homework }} </h5>
-        <div class="card-body">
-            <h6 class="card-title">Status: {{ homework.status }} Fecha Envio: {{ homework.date_sent }}</h6>
-
-                <p class= "card-text">
-                {{ homework.description }}
-                </p>
-              <p class= "card-text">
-                Profesor: {{ homework.teacher }}
-              </p>
-              <p class= "card-text">
-                Comentarios Estudiante: {{ homework.student_comment }}
-              </p>
-              <a href="{{ url_for('download_file', homework_id=homework.id)}}">
-                <span class="btn btn-primary">Archivo Subido</span>
-              </a>
-
-            </div>
-        
-    </div>
-    <br/>
-    {% endif %}
-    {% endfor %}
+{% block scripts %}
+<script>
+  $(document).ready(function () {
+    $('#data').DataTable({
+      "language":
+      {
+        "search": "Buscar:",
+        "lengthMenu":     "Mostrar _MENU_ entradas",
+        "info":           "Mostrando _START_ a _END_ de _TOTAL_ entradas",
+        "paginate": {
+          "first":      "Primero",
+          "last":       "Ultimo",
+          "next":       "Siguiente",
+          "previous":   "Anterior"
+      },
+      }
+    })
+  });
+</script>
 {% endblock %}

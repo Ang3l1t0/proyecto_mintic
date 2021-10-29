@@ -12,7 +12,7 @@
 <h3>Edad: {{ user.age }}</h3>
 
 {% if user == current_user %}
-<a class="btn btn-primary" href="{{ url_for('edit_profile') }}">
+<a class="btn btn-warning" href="{{ url_for('edit_profile') }}">
  Editar Perfil
 </a>
 {% endif %}

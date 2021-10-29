@@ -3,7 +3,7 @@
 
 {% block page_content %}
 <div class="page-header">
-    <h1>Actividades de sdsds </h1>
+    <h1>Actividades </h1>
 </div>
 <br/>
 
@@ -15,7 +15,6 @@
           <th>Fecha Límite</th>
           <th>Status</th>
           <th>Nombre</th>
-          <th>Apellido</th>
           <th>Fecha de Entrega</th>
           <th>Comentarios</th>
           <th>Nota</th>
@@ -29,8 +28,7 @@
             <td>{{ r.homework_description }}</td>
             <td>{{ r.homework_limit_date }}</td>
             <td>{{ r.homework_status }}</td>
-            <td>{{ r.students_name }}</td>
-            <td>{{ r.students_last_name }}</td>
+            <td>{{ r.students_name }} {{ r.students_last_name }}</td>
             <td>{{ r.homework_date_sent }}</td>
             <td>{{ r.homework_student_comment }}</td>
             <td>{{ r.homework_grade}}</td>
@@ -38,7 +36,7 @@
               <a href="{{ url_for('download_file', homework_id=r.homework_id)}}">
                 <span class="btn btn-dark btn-sm">Descargar</span>
               </a>
-              <a href="#">
+              <a href="{{ url_for('teacher_grade', teacher_id=teacher_id, course_id=course_id, homework_id=r.homework_id) }}">
                 <span class="btn btn-warning btn-sm">Calificar</span>
               </a>
               {% endif %}</td>
