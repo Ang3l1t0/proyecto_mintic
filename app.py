@@ -135,6 +135,23 @@ class Teacher(UserMixin, db.Model):
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+class Admin(UserMixin, db.Model):
+    __tablename__ = 'admin'
+    id = db.Column(db.Integer, primary_key = True)
+    email = db.Column(db.String(64), unique=True, index=True)
+    username = db.Column(db.String(64), unique=True, index=True)
+    password_hash = db.Column(db.String(128))
+
+    def __repr__(self):
+        return '<Admin %r>' % self.username
+    
+    @property
+    def password(self):
+        raise AttributeError('password no es un atributo legible')
+    
+    def verify_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
 class Course(db.Model):
     __tablename__ = 'courses'
     id = db.Column(db.Integer, primary_key=True)
@@ -170,6 +187,8 @@ def load_user(user_id):
         return User.query.get(int(user_id))
     elif session['account_type'] == 'Teacher':
         return Teacher.query.get(int(user_id))
+    elif session['account_type'] == 'Admin':
+        return Admin.query.get(int(user_id))
     else:
       return None
 
@@ -374,6 +393,22 @@ def login_teacher():
             return redirect(next)
         flash('Usuario o clave inválida')
     return render_template('login.html', form=form, name=name)
+
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    form = LoginForm()
+    name = 'Administrador'
+    if form.validate_on_submit():
+        user = Admin.query.filter_by(email=form.email.data).first()
+        if user is not None and user.verify_password(form.password.data):
+            session['account_type'] = 'Admin'
+            login_user(user, remember=True)
+            next = request.args.get('next')
+            if next is None or not next.startswith('/'):
+                next = url_for('home')
+            return redirect(next)
+        flash('Usuario o clave inválida')
+    return render_template('admin_login.html', form=form, name=name)
 
 @app.route('/teacher/courses/<username>', methods=['GET', 'POST'])
 @login_required
