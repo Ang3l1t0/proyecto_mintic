@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_modal_asign with context %}
+{% from "_macros.html" import render_field with context %}
+
+
+
+{% block page_content %}
+
+    <div class="page-header">
+        <h1>Asignaturas </h1> 
+        <br/>
+        
+    </div>
+    <a href="{{ url_for('admin_students_create') }}">
+      <span class="btn btn-warning ">Crear Asignatura</span></a>
+    <br/>
+    <br/>
+    
+        <table id="data2" class="table table-striped">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Código</th>
+              <th>Descripción</th>
+              <th>Nombre Profesor</th>
+              <th>Apellido</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r2 in result %}
+    
+              <tr>
+                <td>{{ r2.course_name }}</td>
+                <td>{{ r2.course_code }}</td>
+                <td>{{ r2.course_about }}</td>
+                <td>{{ r2.teacher_name }}</td>
+                <td>{{ r2.teacher_last_name }}</td>
+
+
+                
+              </tr>
+
+            {% endfor %}
+          </tbody>
+        </table>
+    
+{% endblock %}
+
+{% block scripts %}
+  <script>
+    $(document).ready(function () {
+      $('#data').DataTable({
+        "language":
+        {
+          "search": "Buscar:",
+          "lengthMenu":     "Mostrar _MENU_ entradas",
+          "info":           "Mostrando _START_ a _END_ de _TOTAL_ entradas",
+          "paginate": {
+            "first":      "Primero",
+            "last":       "Ultimo",
+            "next":       "Siguiente",
+            "previous":   "Anterior"
+        },
+        }
+      })
+    });
+    $(document).ready(function () {
+        $('#data2').DataTable({
+          "language":
+          {
+            "search": "Buscar:",
+            "lengthMenu":     "Mostrar _MENU_ entradas",
+            "info":           "Mostrando _START_ a _END_ de _TOTAL_ entradas",
+            "paginate": {
+              "first":      "Primero",
+              "last":       "Ultimo",
+              "next":       "Siguiente",
+              "previous":   "Anterior"
+          },
+          }
+        })
+      });
+  </script>
+{% endblock %}
+
