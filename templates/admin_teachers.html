@@ -8,8 +8,11 @@
 <div class="page-header">
     <h1>Profesores con Cursos</h1> 
     <br/>
-    
+
+    <a href="{{ url_for('admin_teachers_create') }}">
+      <span class="btn btn-warning ">Crear Profesor</span></a>
 </div>
+<br/>
 <br/>
 
     <table id="data" class="table table-striped">
@@ -56,6 +59,7 @@
               <th>Cédula</th>
               <th>Edad</th>
               <th>Género</th>
+              <th>Correo</th>
               <th>Acciones</th>
             </tr>
           </thead>
@@ -69,9 +73,12 @@
                 <td>{{ r2.cc }}</td>
                 <td>{{ r2.age }}</td>
                 <td>{{ r2.genre}}</td>
+                <td>{{ r2.email}}</td>
                 <td><a href="{{ url_for('admin_teachers_edit_profile', username=r2.username) }}">
                     <span class="btn btn-warning btn-sm">Editar</span>
-                  </a></td>
+                  </a><a href="{{ url_for('admin_teachers_course', teacher_id=r2.id) }}">
+                  <span class="btn btn-warning btn-sm">Agregar Curso</span>
+                </a></td>
                 
               </tr>
 

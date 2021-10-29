@@ -4,6 +4,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField, BooleanField, ValidationError, FileField, TextAreaField,  DecimalField, DateTimeField
 from wtforms.validators import DataRequired, Length, Email, Regexp, EqualTo, NumberRange
 import os
+from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_mail import Mail
@@ -161,7 +162,10 @@ class Course(db.Model):
     teacher_id = db.Column(db.Integer,db.ForeignKey(Teacher.id))
 
     def __repr__(self):
-        return '<Course %r>' % self.name
+        return self.name
+
+def choice_query():
+    return Course.query
 
 
 @app.shell_context_processor
@@ -205,6 +209,7 @@ class RegForm(FlaskForm):
     cc = StringField('Cédula', validators=[DataRequired()])
     age = StringField('Edad', validators=[DataRequired()])
     email = StringField('Email UniQuindio', validators=[DataRequired()])
+    genre = StringField('Género', validators=[DataRequired()])
     username = StringField('Usuario', validators=[
     DataRequired(), Length(1, 64),
     Regexp('^[A-Za-z][A-Za-z0-9_.]*$', 0,
@@ -263,6 +268,11 @@ class CreateActForm(FlaskForm):
     description = TextAreaField('Descripción', validators=[DataRequired()])
     limit_date = DateTimeField('Fecha Límite', validators=[DataRequired(message='Fecha en formato AAAA-MM-DD HH:MM:SS')])
     submit = SubmitField('Editar')
+
+class ChoiceClassForm(FlaskForm):
+    opts = QuerySelectField(query_factory=choice_query, allow_blank=True, get_label='name')
+    submit = SubmitField('Agregar Curso')
+
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -437,7 +447,7 @@ def login_teacher():
         flash('Usuario o clave inválida')
     return render_template('login.html', form=form, name=name)
 
-@app.route('/admin/login', methods=['GET', 'POST'])
+@app.route('/admin', methods=['GET', 'POST'])
 def admin_login():
     form = LoginForm()
     name = 'Administrador'
@@ -453,6 +463,21 @@ def admin_login():
         flash('Usuario o clave inválida')
     return render_template('admin_login.html', form=form, name=name)
 
+@app.route('/admin/teachers/select-course/<int:teacher_id>', methods=['GET', 'POST'])
+@login_required
+@require_role(role="Admin")
+def admin_teachers_course(teacher_id):
+    form = ChoiceClassForm()
+    if form.validate_on_submit():
+        print(form.opts.data)
+        course = Course.query.filter_by(name=str(form.opts.data)).first_or_404()
+        course.teacher_id = teacher_id
+        db.session.flush()
+        db.session.commit()
+        flash('Curso Asignado.')
+        return redirect(url_for('admin_teachers'))
+    return render_template('admin_teachers_course.html', form=form)
+
 @app.route('/admin/teachers', methods=['GET', 'POST'])
 @login_required
 @require_role(role="Admin")
@@ -461,8 +486,27 @@ def admin_teachers():
     result2 = db.session.execute('Select * From teachers')
     return render_template('admin_teachers.html', result=result, result2=result2)
 
+@app.route('/admin/teachers/create', methods=['GET', 'POST'])
+@login_required
+@require_role(role="Admin")
+def admin_teachers_create():
+    form = RegForm()
+    if form.validate_on_submit():
+        teacher = Teacher(name=form.name.data,
+                    last_name=form.last_name.data,
+                    cc=form.cc.data,
+                    age=form.age.data,
+                    email=form.email.data,
+                    genre=form.genre.data,
+                    username=form.username.data,
+                    password=form.password.data)
+        db.session.add(teacher)
+        db.session.commit()
+        flash('Profesor registrado correctamente')
+        return redirect(url_for('admin_teachers'))
+    return render_template('admin_teachers_create.html', form=form)
 
-@app.route('/teacher/courses/<username>', methods=['GET', 'POST'])
+@app.route('/teachers/courses/<username>', methods=['GET', 'POST'])
 @login_required
 @require_role(role="Teacher")
 def courses_teacher(username):
@@ -471,7 +515,7 @@ def courses_teacher(username):
 
     return render_template('teacher_courses.html', result=result)
 
-@app.route('/teacher/activities/<int:teacher_id>/<int:course_id>', methods=['GET', 'POST'])
+@app.route('/teachers/activities/<int:teacher_id>/<int:course_id>', methods=['GET', 'POST'])
 @login_required
 @require_role(role="Teacher")
 def teacher_activities(teacher_id, course_id):
@@ -496,7 +540,7 @@ def teacher_grade(teacher_id, course_id, homework_id):
         #db.session.execute('UPDATE homework Set file_url = :val, status = "Entregado" Where id = :val', {'val': filename, 'val': id})
     return render_template('teacher_grade.html', form=form, homework=homework, homework_name=homework_name)
 
-@app.route('/teacher/create_activity/<int:teacher_id>/<int:course_id>', methods=['GET', 'POST'])
+@app.route('/teachers/create_activity/<int:teacher_id>/<int:course_id>', methods=['GET', 'POST'])
 @login_required
 @require_role(role="Teacher")
 def teacher_create_activity(teacher_id, course_id):

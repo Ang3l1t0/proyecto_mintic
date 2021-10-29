@@ -59,12 +59,13 @@
     <h1>Registro</h1>
 </div>
 
+
 <main class="login-form">
     <div class="cotainer">
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <div class="card">
-                    <div class="card-header">Registro Estudiante</div>
+                    <div class="card-header">Agregar Profesor</div>
                     <div class="card-body">
                         <!-- llama al macro para generar los fields del form registro -->
 
@@ -74,6 +75,7 @@
                             {{ render_field(form.last_name) }}
                             {{ render_field(form.cc) }}
                             {{ render_field(form.age) }}
+                            {{ render_field(form.genre) }}
                             {{ render_field(form.email) }}
                             {{ render_field(form.username) }}
                             {{ render_field(form.password) }}
@@ -82,9 +84,7 @@
                                 <!-- llamando boton submit del form  -->
 
                                 {{ form.submit(class="btn btn-warning")}}
-                                <a href="#" class="btn btn-link">
-                                    ¿Olvidó su contraseña?
-                                </a>
+                                
                             </div>
                     </div>
                     </form>
