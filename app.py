@@ -456,7 +456,7 @@ def upload(homework_id, enrollment_id):
 @login_required
 def download_file(homework_id):
     homework = Homework.query.filter(Homework.id==homework_id).first()
-    return send_file(basedir+"\\uploads\\documents\\"+ homework.file_url, as_attachment=True)
+    return send_file("/app/uploads/documents/"+ homework.file_url, as_attachment=True)
 
 @app.route('/registro', methods=['GET', 'POST'])
 def registro():
