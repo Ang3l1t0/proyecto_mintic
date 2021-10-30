@@ -1,3 +1,4 @@
 body {
-    background-image: url("../img/Notas.png");
+    background-size: cover;
+    background-position: top;
 }
