@@ -1,5 +1,6 @@
 body {
-    background-image: url("../static/img/Notas.png");
+    background-image: url("../img/Notas.png");
     background-position: top;
-    background-size: 88%;
+    background-size: cover;
+    background-repeat: no-repeat;
 }
